@@ -1,0 +1,4283 @@
+/*
+ **  GWMGenerateRecyRecoReport.java
+ **edit by ykj 2017.1.20
+ */
+
+import java.util.*;
+import java.util.Set;
+import java.io.*;
+  
+  
+  
+  //add by xu begin 2010/05/08
+import java.text.DecimalFormat;
+import java.math.BigDecimal;
+  //add by xu end
+
+
+import matrix.db.*;
+import matrix.util.Pattern;
+import matrix.util.StringList;
+
+import com.matrixone.apps.domain.DomainObject;
+import com.matrixone.apps.domain.DomainRelationship;
+import com.matrixone.apps.domain.DomainSymbolicConstants;
+import com.matrixone.apps.domain.util.*;
+
+// TODO: due to packaging, can't resolve ${CLASS:emxDomainObject}; for now work
+// around that
+public class ${CLASSNAME} extends DomainObject {
+	public final static long serialVersionUID = 0;
+	 
+	   //add by xu begin 2010/05/08
+	 public  final static int scale =2;	 //??????
+   public  final static int roundingMode =4;   //?????????
+    //add by xu end 2010/05/08
+	StringList GWMpartSelects = new StringList();
+	StringList GWMRelEBOMSelects = new StringList();
+	StringList GWMMEPSelects =  new StringList();
+	StringList GWMRelManfEqiSelects =  new StringList();
+	StringList GWMMaterialSelects = new StringList();
+	StringList GWMRelComponentMaterialSelects = new StringList();
+	StringList GWMRelComponentSubstanceSelects = new StringList();
+	
+	StringList GWMSubstanceSelects = new StringList();
+	
+	/**
+	 * Constructs a new MCCCommonBase JPO object.
+	 *
+	 * @param context
+	 *            the eMatrix <code>Context</code> object
+	 * @param args
+	 *            holds no arguments
+	 * @throws Exception
+	 *             if the operation fails
+	 * @since MCC 10.Next
+	 */
+	public ${CLASSNAME}(Context context, String[] args)
+		throws Exception
+	{
+		// Call the super constructor
+
+		// TODO: due to packaging, can't resolve ${CLASS:emxDomainObject}; for now
+		// work around that
+		// super(context, args);
+		super();
+
+		if (args != null && args.length > 0) {
+			setId(args[0]);
+		}
+	}
+
+	public static MapList getAllObjects(Context context, String type)
+		throws FrameworkException
+	{
+		if (type == null) {
+			throw new FrameworkException(
+				\"Exception in getAllObjects: type can not be null\");
+		}
+
+		StringList objectSelects = new StringList(3);
+		objectSelects.add(DomainObject.SELECT_ID);
+		objectSelects.add(DomainObject.SELECT_NAME);
+		objectSelects.add(DomainObject.SELECT_DESCRIPTION);
+		objectSelects.add(DomainObject.SELECT_REVISION);
+		objectSelects.add(\"from[Compliance Type].to.name\");
+
+		// get all the Material Classification objects in the system
+		MapList mapList = DomainObject.findObjects(context, type,
+			DomainObject.QUERY_WILDCARD, null, objectSelects);
+
+		return mapList;
+	}
+
+
+	public static MapList getComplianceApplications(Context context)
+		throws FrameworkException
+	{
+		String type = PropertyUtil.getSchemaProperty(context,
+			SYMBOLIC_type_ComplianceApplication);
+		MapList mapList = getAllObjects(context, type);
+
+		return mapList;
+	}
+
+
+	/**
+	 * Gets the connected Objects to context Object.
+	 *
+	 * @param context
+	 *            the eMatrix <code>Context</code> object
+	 * @param args
+	 *            holds no arguments
+	 * @return a <code>MapList</code> holds connected Objects .
+	 * @throws Exception
+	 *             if the operation fails
+	 * @since MCC 10.Next
+	 */
+	public MapList getWhereUsed(Context context, String strObjectId,
+		String typePattern, String relPattern, StringList busSelects,
+		StringList relSelects, short level) throws Exception
+	{
+		try {
+			StringBuffer sbType = new StringBuffer(128);
+			StringBuffer sbRelation = new StringBuffer(128);
+			if (typePattern != null && !\"null\".equals(typePattern)
+				&& !\"\".equals(typePattern))
+			{
+				StringList typeList = FrameworkUtil.split(typePattern, \",\");
+				for (int i = 0; i < typeList.size(); i++) {
+					sbType.append(\",\");
+					sbType.append(PropertyUtil.getSchemaProperty(context,
+						(String) typeList.get(i)));
+				}
+			}
+			if (sbType.length() > 1) {
+				sbType.deleteCharAt(0);
+			}
+			if (relPattern != null && !\"null\".equals(relPattern)
+				&& !\"\".equals(relPattern))
+			{
+				StringList relList = FrameworkUtil.split(relPattern, \",\");
+				for (int i = 0; i < relList.size(); i++) {
+					sbRelation.append(\",\");
+					sbRelation.append(PropertyUtil.getSchemaProperty(context,
+						(String) relList.get(i)));
+				}
+			}
+			if (sbRelation.length() > 1) {
+				sbRelation.deleteCharAt(0);
+			}
+			setId(strObjectId);
+			MapList mapList = getRelatedObjects(context, sbRelation
+				.toString(), sbType.toString(), busSelects, relSelects, false,
+				true, level, null, null);
+
+			return mapList;
+		} catch (Exception e) {
+			throw new FrameworkException(e.getMessage());
+		}
+	}
+
+	/**
+	 * Gets the directly connected Objects to context Object.
+	 *
+	 */
+
+	public MapList getMassVariablePartsList(Context context, String[] args)
+		throws Exception
+	{
+		System.out.println(\"getMassVariablePartsList STARTS\");
+		MapList resultList = new MapList();
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			// The object id of the context object is retrieved from the HashMap
+			// using the appropriate key.
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String reportMV = (String) programMap.get(\"reportMV\");
+			System.out.println(\"Map is : \"+programMap);
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			String sRelEBOM = PropertyUtil.getSchemaProperty(context,\"relationship_EBOM\");
+
+			String sTypePart = PropertyUtil.getSchemaProperty(context,\"type_Part\");
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+
+			// Calls the method which directly accepts the Object ID
+			StringList busSelects = new StringList(8);
+			busSelects.addElement(SELECT_ID);
+			busSelects.addElement(SELECT_NAME);
+			busSelects.addElement(SELECT_TYPE);
+			busSelects.addElement(SELECT_REVISION);
+			busSelects.addElement(\"attribute[GWMCEnglishName]\");
+			busSelects.addElement(\"attribute[GWMCPartName]\");
+			busSelects.addElement(\"attribute[Calculated Weight]\");
+			busSelects.addElement(\"attribute[GWM 22628 Mass Variable]\");
+                       
+
+			// RelationShip Selects
+			StringList relSelects = new StringList(2);
+			relSelects.addElement(SELECT_RELATIONSHIP_ID);
+			relSelects.addElement(SELECT_RELATIONSHIP_NAME);
+
+			ContextUtil.pushContext(context);
+			MapList mapList = dmCarPart.getRelatedObjects(context, 
+							sRelEBOM,
+							\"*\",
+							false,
+							true,
+							0,
+							busSelects, 
+							relSelects, 
+							null, 
+							null,
+							null,
+							null,
+							null);
+			Iterator itr = mapList.iterator();
+			while (itr.hasNext()) {
+				Hashtable htPart = (Hashtable) itr.next();
+				String sName = (String) htPart.get(SELECT_NAME);
+				String sMassVariable = (String) htPart.get(\"attribute[GWM 22628 Mass Variable]\");
+				System.out.println(sName + \" >> sMassVariable >>[\" + sMassVariable + \"]\");
+				if (sMassVariable != null && reportMV.equals(sMassVariable))
+				{
+					resultList.add(htPart);
+				}
+			}
+
+			ContextUtil.popContext(context);
+			//mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"string\");
+			System.out.println(\"Map >>\" + mapList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} 
+
+		System.out.println(\"getMassVariablePartsList ENDS\");
+		return resultList;
+		}
+
+
+
+	public boolean checkIfMEPRecyclable(Context context, String htID) throws Exception {
+		// Get connected Material
+		MapList materialList = getMEPMaterial(context, htID, 
+			\"relationship_ComponentMaterial\",
+			\"type_Material\");
+		Iterator matItr = materialList.iterator();
+		boolean isMaterialRecyclable = false;
+		while (matItr.hasNext())
+		{
+			HashMap hmMaterials = new HashMap();
+			Hashtable htMat = (Hashtable) matItr.next();
+			String sMaterialId = (String) htMat.get(SELECT_ID);
+			String sMaterialName = (String) htMat.get(SELECT_NAME);
+			String sMaterialRecy = (String) htMat.get(\"attribute[GWM recyclability]\");
+			//System.out.println(\"sMaterialName >>\" + sMaterialName + \" >> \" + sTotal + \" >> \" + sMaterialClassification);
+			if (\"Yes\".equals(sMaterialRecy))
+			{
+				isMaterialRecyclable = true;
+				break;
+			}
+		}
+		return isMaterialRecyclable;
+	}
+
+	public boolean checkIfMEPUnRecyclable(Context context, String htID) throws Exception {
+		// Get connected Material
+		MapList materialList = getMEPMaterial(context, htID, 
+			\"relationship_ComponentMaterial\",
+			\"type_Material\");
+		Iterator matItr = materialList.iterator();
+		boolean isMaterialUnRecyclable = false;
+		while (matItr.hasNext())
+		{
+			HashMap hmMaterials = new HashMap();
+			Hashtable htMat = (Hashtable) matItr.next();
+			String sMaterialId = (String) htMat.get(SELECT_ID);
+			String sMaterialName = (String) htMat.get(SELECT_NAME);
+			String sMaterialRecy = (String) htMat.get(\"attribute[GWM recyclability]\");
+			//System.out.println(\"sMaterialName >>\" + sMaterialName + \" >> \" + sTotal + \" >> \" + sMaterialClassification);
+			if (\"No\".equals(sMaterialRecy))
+			{
+				isMaterialUnRecyclable = true;
+				break;
+			}
+		}
+		return isMaterialUnRecyclable;
+	}
+	public boolean checkIfMEPRecoverable(Context context, String htID) throws Exception {
+		// Get connected Material
+		MapList materialList = getMEPMaterial(context, htID, 
+			\"relationship_ComponentMaterial\",
+			\"type_Material\");
+		Iterator matItr = materialList.iterator();
+		boolean isMaterialRecoverable = false;
+		while (matItr.hasNext())
+		{
+			HashMap hmMaterials = new HashMap();
+			Hashtable htMat = (Hashtable) matItr.next();
+			String sMaterialId = (String) htMat.get(SELECT_ID);
+			String sMaterialName = (String) htMat.get(SELECT_NAME);
+			String sMaterialRecy = (String) htMat.get(\"attribute[GWM recoverability]\");
+			//System.out.println(\"sMaterialName >>\" + sMaterialName + \" >> \" + sTotal + \" >> \" + sMaterialClassification);
+			if (\"Yes\".equals(sMaterialRecy))
+			{
+				isMaterialRecoverable = true;
+				break;
+			}
+		}
+		return isMaterialRecoverable;
+	}
+
+
+	public MapList getPartsWithRecyclableMaterials(Context context, String strObjectId) throws Exception {
+		System.out.println(\"getPartsWithRecyclableMaterials STARTS NEW\");
+		MapList mlRecyParts = new MapList();
+		StringList slFinalPartList = new StringList();
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			String sTypeT1SupplierPart = PropertyUtil.getSchemaProperty(\"type_T1SupplierPart\");
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			// Calls the method which directly accepts the Object ID
+			MapList mapList = getEBOMStructureWithMEP(context, strObjectId, \"relationship_EBOM\",
+				\"type_Part\");
+			mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"string\");
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			while (itr.hasNext())
+			{
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htRelName = (String) htPart.get(SELECT_RELATIONSHIP_NAME);
+
+				if (htType.equals(sTypeT1SupplierPart))
+				{
+					// Then check recyclability of this supplier part
+					// Get All MEPs and check their recyclability one by one
+					System.out.println(\"Supplier Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					// Get MEP and Connected materials. If all materials Recyclability set to Yes then it is Recyclable
+					MapList partList = getSingleLevelEBOMStructureWithMEP(context, htID, 
+						\"relationship_ManufacturerEquivalent\",
+						\"type_Part\");
+					//System.out.println(\"partList >>\" + partList);
+					Iterator partItr = partList.iterator();
+					boolean isSupplierPartRecyclable = false;
+					while (partItr.hasNext())
+					{
+						Hashtable htImmPart = (Hashtable) partItr.next();
+						String sPartName = (String) htImmPart.get(SELECT_NAME);
+						String sPartId = (String) htImmPart.get(SELECT_ID);
+
+						boolean isMEPRecyclable = checkIfMEPRecyclable(context, sPartId);
+						if (isMEPRecyclable)
+						{
+							isSupplierPartRecyclable = true;
+							break;
+						}
+					}// While partList hasNext()
+
+					HashMap hmSupPart = new HashMap();
+					if (isSupplierPartRecyclable)
+					{
+						System.out.println(\"recyclable\");
+						hmSupPart.put(\"recy\",\"true\");
+					} else {
+						System.out.println(\"UNrecyclable\");
+						hmSupPart.put(\"recy\",\"false\");
+					}
+					hmPartsMass.put(htID, hmSupPart);
+				} else {
+					// there will be 3 cases for this. 
+					// 1. this is end item gwm part with no supplier part but MEP>>Materials
+					// 2. this is end item gwm part with sup part which in turn connected with MEP>>Materials
+					// 3. this is a middle level part for eg. Car Part >> ...>>This part>>...>>Sup Part>>MEP>>Material
+					System.out.println(\"GWM Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					DomainObject dmGWMPart = new DomainObject(htID);
+					// If it is end item GWM Part then check if Supplier Part/MEP is recyclable or not
+					StringList sNextEBOMIds = dmGWMPart.getInfoList(context, \"from[EBOM].to.id\");
+					StringList sNextEBOMTypes  = dmGWMPart.getInfoList(context, \"from[EBOM].to.type\");
+					if (sNextEBOMIds != null && sNextEBOMIds.size() > 0)
+					{
+						// this could be case 2 Most common
+						if (sNextEBOMTypes != null && sNextEBOMTypes.contains(sTypeT1SupplierPart))
+						{
+							System.out.println(\"Case 2. this is end item gwm part with sup part\");
+							System.out.println(\"NextEBOM Item Found\");
+							boolean bIsAnySupplierPartRecyclable = false;
+							for (int i=0; i<sNextEBOMIds.size(); i++)
+							{
+								String sSupId = (String) sNextEBOMIds.get(i);
+								DomainObject dmSupPart = new DomainObject(sSupId);
+								System.out.println(\"Checking Sup Part >>\" + dmSupPart.getInfo(context, DomainObject.SELECT_NAME));
+								if (sTypeT1SupplierPart.equals(dmSupPart.getInfo(context, DomainObject.SELECT_TYPE)))
+								{
+									HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sSupId);
+									if (hmImmPartMass != null)
+									{
+										String sMaterialRecy = (String) hmImmPartMass.get(\"recy\");
+										System.out.println(\"sMaterialRecy >>\" + sMaterialRecy);
+										if (\"true\".equals(sMaterialRecy))
+										{
+											bIsAnySupplierPartRecyclable = true;
+											break;
+										}
+									}
+								}
+							}// for each supplier part
+							Hashtable htGWMPart = new Hashtable(6);
+							if (bIsAnySupplierPartRecyclable)
+							{
+								System.out.println(\"recyclable\");
+								htGWMPart.put(DomainObject.SELECT_TYPE, dmGWMPart.getInfo(context,DomainObject.SELECT_TYPE));
+								htGWMPart.put(DomainObject.SELECT_NAME, dmGWMPart.getInfo(context,DomainObject.SELECT_NAME));
+								htGWMPart.put(DomainObject.SELECT_REVISION, dmGWMPart.getInfo(context,SELECT_REVISION));
+								htGWMPart.put(DomainObject.SELECT_DESCRIPTION, dmGWMPart.getInfo(context,SELECT_DESCRIPTION));
+								htGWMPart.put(\"attribute[GWM English Part Name]\",dmGWMPart.getInfo(context, \"attribute[GWM English Part Name]\"));
+								htGWMPart.put(\"attribute[Calculated Weight]\", dmGWMPart.getInfo(context, \"attribute[Calculated Weight]\"));
+								if (!slFinalPartList.contains(htID))
+								{
+									mlRecyParts.add(htGWMPart);
+									slFinalPartList.add(htID);
+								}
+							} else {
+								System.out.println(\"UNrecyclable\");
+							} //if bIsAnySupplierPartRecyclable ends
+						} else {
+							//this is case 3 so skip this part and continue
+							System.out.println(\"Case 3. this is a middle level part\");
+							continue;
+						}
+					} else {
+						// this is case 1.this is end item gwm part with no supplier part but MEP>>Materials
+						System.out.println(\"NextEBOM Item NOT Found\");
+						System.out.println(\"Case 1. this is end item gwm part with no supplier part but MEP>>Materials\");
+						MapList partList = getSingleLevelEBOMStructureWithMEP(context, htID, 
+							\"relationship_ManufacturerEquivalent\",
+							\"type_Part\");
+						//System.out.println(\"partList >>\" + partList);
+						Iterator partItr = partList.iterator();
+						boolean isGWMPartRecyclable = false;
+						while (partItr.hasNext())
+						{
+							Hashtable htImmPart = (Hashtable) partItr.next();
+							String sPartName = (String) htImmPart.get(SELECT_NAME);
+							String sPartId = (String) htImmPart.get(SELECT_ID);
+
+							boolean isMEPRecyclable = checkIfMEPRecyclable(context, sPartId);
+							if (isMEPRecyclable)
+							{
+								isGWMPartRecyclable = true;
+								break;
+							}
+						}// While partList hasNext()
+
+						Hashtable htGWMPart = new Hashtable(6);
+						if (isGWMPartRecyclable)
+						{
+							System.out.println(\"recyclable\");
+							htGWMPart.put(DomainObject.SELECT_TYPE, dmGWMPart.getInfo(context,DomainObject.SELECT_TYPE));
+							htGWMPart.put(DomainObject.SELECT_NAME, dmGWMPart.getInfo(context,DomainObject.SELECT_NAME));
+							htGWMPart.put(DomainObject.SELECT_REVISION, dmGWMPart.getInfo(context,SELECT_REVISION));
+							htGWMPart.put(DomainObject.SELECT_DESCRIPTION, dmGWMPart.getInfo(context,SELECT_DESCRIPTION));
+							htGWMPart.put(\"attribute[GWM English Part Name]\",dmGWMPart.getInfo(context, \"attribute[GWM English Part Name]\"));
+							htGWMPart.put(\"attribute[Calculated Weight]\", dmGWMPart.getInfo(context, \"attribute[Calculated Weight]\"));
+							if (!slFinalPartList.contains(htID))
+							{
+								mlRecyParts.add(htGWMPart);
+								slFinalPartList.add(htID);
+							}
+						} else {
+							System.out.println(\"UNrecyclable\");
+						}
+					}
+				}
+			}// while each part
+		System.out.println(\"getPartsWithRecyclableMaterials ENDS NEW\");
+		return mlRecyParts;
+
+	}
+
+	public MapList getPartsWithUnRecyclableMaterials(Context context, String strObjectId) throws Exception {
+		System.out.println(\"getPartsWithUnRecyclableMaterials STARTS NEW\");
+		MapList mlRecyParts = new MapList();
+		StringList slFinalPartList = new StringList();
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			String sTypeT1SupplierPart = PropertyUtil.getSchemaProperty(\"type_T1SupplierPart\");
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			// Calls the method which directly accepts the Object ID
+			MapList mapList = getEBOMStructureWithMEP(context, strObjectId, \"relationship_EBOM\",
+				\"type_Part\");
+			mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"string\");
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			while (itr.hasNext())
+			{
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htRelName = (String) htPart.get(SELECT_RELATIONSHIP_NAME);
+
+				if (htType.equals(sTypeT1SupplierPart))
+				{
+					// Then check recyclability of this supplier part
+					// Get All MEPs and check their recyclability one by one
+					System.out.println(\"Supplier Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					// Get MEP and Connected materials. If all materials Recyclability set to Yes then it is Recyclable
+					MapList partList = getSingleLevelEBOMStructureWithMEP(context, htID, 
+						\"relationship_ManufacturerEquivalent\",
+						\"type_Part\");
+					//System.out.println(\"partList >>\" + partList);
+					Iterator partItr = partList.iterator();
+					boolean isSupplierPartUnRecyclable = false;
+					while (partItr.hasNext())
+					{
+						Hashtable htImmPart = (Hashtable) partItr.next();
+						String sPartName = (String) htImmPart.get(SELECT_NAME);
+						String sPartId = (String) htImmPart.get(SELECT_ID);
+
+						boolean isMEPUnRecyclable = checkIfMEPUnRecyclable(context, sPartId);
+						if (isMEPUnRecyclable)
+						{
+							isSupplierPartUnRecyclable = true;
+							break;
+						}
+					}// While partList hasNext()
+
+					HashMap hmSupPart = new HashMap();
+					if (isSupplierPartUnRecyclable)
+					{
+						System.out.println(\"recyclable\");
+						hmSupPart.put(\"norecy\",\"true\");
+					} else {
+						System.out.println(\"UNrecyclable\");
+						hmSupPart.put(\"norecy\",\"false\");
+					}
+					hmPartsMass.put(htID, hmSupPart);
+				} else {
+					// there will be 3 cases for this. 
+					// 1. this is end item gwm part with no supplier part but MEP>>Materials
+					// 2. this is end item gwm part with sup part which in turn connected with MEP>>Materials
+					// 3. this is a middle level part for eg. Car Part >> ...>>This part>>...>>Sup Part>>MEP>>Material
+					System.out.println(\"GWM Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					DomainObject dmGWMPart = new DomainObject(htID);
+					// If it is end item GWM Part then check if Supplier Part/MEP is recyclable or not
+					StringList sNextEBOMIds = dmGWMPart.getInfoList(context, \"from[EBOM].to.id\");
+					StringList sNextEBOMTypes  = dmGWMPart.getInfoList(context, \"from[EBOM].to.type\");
+					if (sNextEBOMIds != null && sNextEBOMIds.size() > 0)
+					{
+						// this could be case 2 Most common
+						if (sNextEBOMTypes != null && sNextEBOMTypes.contains(sTypeT1SupplierPart))
+						{
+							System.out.println(\"Case 2. this is end item gwm part with sup part\");
+							System.out.println(\"NextEBOM Item Found\");
+							boolean bIsAnySupplierPartUnRecyclable = false;
+							for (int i=0; i<sNextEBOMIds.size(); i++)
+							{
+								String sSupId = (String) sNextEBOMIds.get(i);
+								DomainObject dmSupPart = new DomainObject(sSupId);
+								System.out.println(\"Checking Sup Part >>\" + dmSupPart.getInfo(context, DomainObject.SELECT_NAME));
+								if (sTypeT1SupplierPart.equals(dmSupPart.getInfo(context, DomainObject.SELECT_TYPE)))
+								{
+									HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sSupId);
+									if (hmImmPartMass != null)
+									{
+										String sMaterialRecy = (String) hmImmPartMass.get(\"norecy\");
+										System.out.println(\"sMaterialRecy >>\" + sMaterialRecy);
+										if (\"true\".equals(sMaterialRecy))
+										{
+											bIsAnySupplierPartUnRecyclable = true;
+											break;
+										}
+									}
+								}
+							}// for each supplier part
+							Hashtable htGWMPart = new Hashtable(6);
+							if (bIsAnySupplierPartUnRecyclable)
+							{
+								System.out.println(\"unrecyclable\");
+								htGWMPart.put(DomainObject.SELECT_TYPE, dmGWMPart.getInfo(context,DomainObject.SELECT_TYPE));
+								htGWMPart.put(DomainObject.SELECT_NAME, dmGWMPart.getInfo(context,DomainObject.SELECT_NAME));
+								htGWMPart.put(DomainObject.SELECT_REVISION, dmGWMPart.getInfo(context,SELECT_REVISION));
+								htGWMPart.put(DomainObject.SELECT_DESCRIPTION, dmGWMPart.getInfo(context,SELECT_DESCRIPTION));
+								htGWMPart.put(\"attribute[GWM English Part Name]\",dmGWMPart.getInfo(context, \"attribute[GWM English Part Name]\"));
+								htGWMPart.put(\"attribute[Calculated Weight]\", dmGWMPart.getInfo(context, \"attribute[Calculated Weight]\"));
+								if (!slFinalPartList.contains(htID))
+								{
+									mlRecyParts.add(htGWMPart);
+									slFinalPartList.add(htID);
+								}
+							} else {
+								System.out.println(\"recyclable\");
+							} //if bIsAnySupplierPartRecyclable ends
+						} else {
+							//this is case 3 so skip this part and continue
+							System.out.println(\"Case 3. this is a middle level part\");
+							continue;
+						}
+					} else {
+						// this is case 1.this is end item gwm part with no supplier part but MEP>>Materials
+						System.out.println(\"NextEBOM Item NOT Found\");
+						System.out.println(\"Case 1. this is end item gwm part with no supplier part but MEP>>Materials\");
+						MapList partList = getSingleLevelEBOMStructureWithMEP(context, htID, 
+							\"relationship_ManufacturerEquivalent\",
+							\"type_Part\");
+						//System.out.println(\"partList >>\" + partList);
+						Iterator partItr = partList.iterator();
+						boolean isGWMPartUnRecyclable = false;
+						while (partItr.hasNext())
+						{
+							Hashtable htImmPart = (Hashtable) partItr.next();
+							String sPartName = (String) htImmPart.get(SELECT_NAME);
+							String sPartId = (String) htImmPart.get(SELECT_ID);
+
+							boolean isMEPUnRecyclable = checkIfMEPUnRecyclable(context, sPartId);
+							if (isMEPUnRecyclable)
+							{
+								isGWMPartUnRecyclable = true;
+								break;
+							}
+						}// While partList hasNext()
+
+						Hashtable htGWMPart = new Hashtable(6);
+						if (isGWMPartUnRecyclable)
+						{
+							System.out.println(\"unrecyclable\");
+							htGWMPart.put(DomainObject.SELECT_TYPE, dmGWMPart.getInfo(context,DomainObject.SELECT_TYPE));
+							htGWMPart.put(DomainObject.SELECT_NAME, dmGWMPart.getInfo(context,DomainObject.SELECT_NAME));
+							htGWMPart.put(DomainObject.SELECT_REVISION, dmGWMPart.getInfo(context,SELECT_REVISION));
+							htGWMPart.put(DomainObject.SELECT_DESCRIPTION, dmGWMPart.getInfo(context,SELECT_DESCRIPTION));
+							htGWMPart.put(\"attribute[GWM English Part Name]\",dmGWMPart.getInfo(context, \"attribute[GWM English Part Name]\"));
+							htGWMPart.put(\"attribute[Calculated Weight]\", dmGWMPart.getInfo(context, \"attribute[Calculated Weight]\"));
+							if (!slFinalPartList.contains(htID))
+							{
+								mlRecyParts.add(htGWMPart);
+								slFinalPartList.add(htID);
+							}
+						} else {
+							System.out.println(\"recyclable\");
+						}
+					}
+				}
+			}// while each part
+		System.out.println(\"getPartsWithUnRecyclableMaterials ENDS NEW\");
+		return mlRecyParts;
+
+	}
+	
+	public MapList getPartsWithRecoverableMaterials(Context context, String strObjectId) throws Exception {
+		System.out.println(\"getPartsWithRecoverableMaterials STARTS NEW\");
+		MapList mlRecyParts = new MapList();
+		StringList slFinalPartList = new StringList();
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			String sTypeT1SupplierPart = PropertyUtil.getSchemaProperty(\"type_T1SupplierPart\");
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			// Calls the method which directly accepts the Object ID
+			MapList mapList = getEBOMStructureWithMEP(context, strObjectId, \"relationship_EBOM\",
+				\"type_Part\");
+			mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"Integer\");
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			while (itr.hasNext())
+			{
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htRelName = (String) htPart.get(SELECT_RELATIONSHIP_NAME);
+
+				if (htType.equals(sTypeT1SupplierPart))
+				{
+					// Then check recyclability of this supplier part
+					// Get All MEPs and check their recyclability one by one
+					System.out.println(\"Supplier Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					// Get MEP and Connected materials. If all materials Recyclability set to Yes then it is Recyclable
+					MapList partList = getSingleLevelEBOMStructureWithMEP(context, htID, 
+						\"relationship_ManufacturerEquivalent\",
+						\"type_Part\");
+					//System.out.println(\"partList >>\" + partList);
+					Iterator partItr = partList.iterator();
+					boolean isSupplierPartRecoverable = false;
+					while (partItr.hasNext())
+					{
+						Hashtable htImmPart = (Hashtable) partItr.next();
+						String sPartName = (String) htImmPart.get(SELECT_NAME);
+						String sPartId = (String) htImmPart.get(SELECT_ID);
+
+						boolean isMEPRecoverable = checkIfMEPRecoverable(context, sPartId);
+						if (isMEPRecoverable)
+						{
+							isSupplierPartRecoverable = true;
+							break;
+						}
+					}// While partList hasNext()
+
+					HashMap hmSupPart = new HashMap();
+					if (isSupplierPartRecoverable)
+					{
+						System.out.println(\"recyclable\");
+						hmSupPart.put(\"reco\",\"true\");
+					} else {
+						System.out.println(\"UNrecyclable\");
+						hmSupPart.put(\"reco\",\"false\");
+					}
+					hmPartsMass.put(htID, hmSupPart);
+				} else {
+					// there will be 3 cases for this. 
+					// 1. this is end item gwm part with no supplier part but MEP>>Materials
+					// 2. this is end item gwm part with sup part which in turn connected with MEP>>Materials
+					// 3. this is a middle level part for eg. Car Part >> ...>>This part>>...>>Sup Part>>MEP>>Material
+					System.out.println(\"GWM Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					DomainObject dmGWMPart = new DomainObject(htID);
+					// If it is end item GWM Part then check if Supplier Part/MEP is recyclable or not
+					StringList sNextEBOMIds = dmGWMPart.getInfoList(context, \"from[EBOM].to.id\");
+					StringList sNextEBOMTypes  = dmGWMPart.getInfoList(context, \"from[EBOM].to.type\");
+					if (sNextEBOMIds != null && sNextEBOMIds.size() > 0)
+					{
+						// this could be case 2 Most common
+						if (sNextEBOMTypes != null && sNextEBOMTypes.contains(sTypeT1SupplierPart))
+						{
+							System.out.println(\"Case 200000000000000000000000000000000000000000000000. this is end item gwm part with sup part\");
+							System.out.println(\"NextEBOM Item Found\");
+							boolean bIsAnySupplierPartRecoverable = false;
+							for (int i=0; i<sNextEBOMIds.size(); i++)
+							{
+								String sSupId = (String) sNextEBOMIds.get(i);
+								DomainObject dmSupPart = new DomainObject(sSupId);
+								System.out.println(\"Checking Sup Part >>\" + dmSupPart.getInfo(context, DomainObject.SELECT_NAME));
+								if (sTypeT1SupplierPart.equals(dmSupPart.getInfo(context, DomainObject.SELECT_TYPE)))
+								{
+									HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sSupId);
+									if (hmImmPartMass != null)
+									{
+										String sMaterialReco = (String) hmImmPartMass.get(\"reco\");
+										System.out.println(\"sMaterialReco >>\" + sMaterialReco);
+										if (\"true\".equals(sMaterialReco))
+										{
+											bIsAnySupplierPartRecoverable = true;
+											break;
+										}
+									}
+								}
+							}// for each supplier part
+							Hashtable htGWMPart = new Hashtable(6);
+							if (bIsAnySupplierPartRecoverable)
+							{
+								System.out.println(\"Recoverable\");
+								htGWMPart.put(DomainObject.SELECT_TYPE, dmGWMPart.getInfo(context,DomainObject.SELECT_TYPE));
+								htGWMPart.put(DomainObject.SELECT_NAME, dmGWMPart.getInfo(context,DomainObject.SELECT_NAME));
+								htGWMPart.put(DomainObject.SELECT_REVISION, dmGWMPart.getInfo(context,SELECT_REVISION));
+								htGWMPart.put(DomainObject.SELECT_DESCRIPTION, dmGWMPart.getInfo(context,SELECT_DESCRIPTION));
+								htGWMPart.put(\"attribute[GWM English Part Name]\",dmGWMPart.getInfo(context, \"attribute[GWM English Part Name]\"));
+								htGWMPart.put(\"attribute[Calculated Weight]\", dmGWMPart.getInfo(context, \"attribute[Calculated Weight]\"));
+								if (!slFinalPartList.contains(htID))
+								{
+									mlRecyParts.add(htGWMPart);
+									slFinalPartList.add(htID);
+								}
+							} else {
+								System.out.println(\"UNRecoverable\");
+							} //if bIsAnySupplierPartRecyclable ends
+						} else {
+							//this is case 3 so skip this part and continue
+							System.out.println(\"Case 3. this is a middle level part\");
+							continue;
+						}
+					} else {
+						// this is case 1.this is end item gwm part with no supplier part but MEP>>Materials
+						System.out.println(\"NextEBOM Item NOT Found\");
+						System.out.println(\"Case 1. this is end item gwm part with no supplier part but MEP>>Materials\");
+						MapList partList = getSingleLevelEBOMStructureWithMEP(context, htID, 
+							\"relationship_ManufacturerEquivalent\",
+							\"type_Part\");
+						//System.out.println(\"partList >>\" + partList);
+						Iterator partItr = partList.iterator();
+						boolean isGWMPartRecoverable = false;
+						while (partItr.hasNext())
+						{
+							Hashtable htImmPart = (Hashtable) partItr.next();
+							String sPartName = (String) htImmPart.get(SELECT_NAME);
+							String sPartId = (String) htImmPart.get(SELECT_ID);
+
+							boolean isMEPRecoverable = checkIfMEPRecyclable(context, sPartId);
+							if (isMEPRecoverable)
+							{
+								isGWMPartRecoverable = true;
+								break;
+							}
+						}// While partList hasNext()
+
+						Hashtable htGWMPart = new Hashtable(6);
+						if (isGWMPartRecoverable)
+						{
+							System.out.println(\"Recoverable\");
+							htGWMPart.put(DomainObject.SELECT_TYPE, dmGWMPart.getInfo(context,DomainObject.SELECT_TYPE));
+							htGWMPart.put(DomainObject.SELECT_NAME, dmGWMPart.getInfo(context,DomainObject.SELECT_NAME));
+							htGWMPart.put(DomainObject.SELECT_REVISION, dmGWMPart.getInfo(context,SELECT_REVISION));
+							htGWMPart.put(DomainObject.SELECT_DESCRIPTION, dmGWMPart.getInfo(context,SELECT_DESCRIPTION));
+							htGWMPart.put(\"attribute[GWM English Part Name]\",dmGWMPart.getInfo(context, \"attribute[GWM English Part Name]\"));
+							htGWMPart.put(\"attribute[Calculated Weight]\", dmGWMPart.getInfo(context, \"attribute[Calculated Weight]\"));
+							if (!slFinalPartList.contains(htID))
+							{
+								mlRecyParts.add(htGWMPart);
+								slFinalPartList.add(htID);
+							}
+						} else {
+							System.out.println(\"UNRecoverable\");
+						}
+					}
+				}
+			}// while each part
+		System.out.println(\"getPartsWithRecoverableMaterials ENDS NEW\");
+		return mlRecyParts;
+
+	}
+
+	
+	public MapList generateRecyRecoPartsReport(Context context, String[] args)
+		throws Exception
+	{
+		System.out.println(\"generateRecyRecoPartsReport STARTS NEW\");
+		
+	 
+
+		
+		
+		MapList mlRecyParts = new MapList();
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String strReportType = (String) programMap.get(\"reportType\");
+			System.out.println(\"strReportType >>\" + strReportType);
+			if (strReportType != null && !\"\".equals(strReportType) && !\"null\".equals(strReportType))
+			{
+				if (\"recy\".equals(strReportType))
+				{
+					mlRecyParts = getPartsWithRecyclableMaterials(context, strObjectId);
+				} else if (\"norecy\".equals(strReportType))
+				{
+					mlRecyParts = getPartsWithUnRecyclableMaterials(context, strObjectId);
+				} else if (\"reco\".equals(strReportType))
+				{
+					mlRecyParts = getPartsWithRecoverableMaterials(context, strObjectId);
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} 
+
+		System.out.println(\"generateRecyRecoPartsReport ENDS\");
+		if (mlRecyParts != null && mlRecyParts.size() > 0)
+		{
+			mlRecyParts.sort(DomainObject.SELECT_NAME,\"ascending\",\"string\");
+		}
+		return mlRecyParts;
+	}
+
+
+	public void setCommonSelects () throws Exception {
+
+		GWMMEPSelects.addElement(SELECT_ID);
+
+		GWMRelManfEqiSelects.addElement(SELECT_RELATIONSHIP_ID);
+		
+		GWMpartSelects.addElement(SELECT_ID);
+		GWMpartSelects.addElement(SELECT_NAME);
+		GWMpartSelects.addElement(SELECT_TYPE);
+		GWMpartSelects.addElement(SELECT_REVISION);
+		GWMpartSelects.addElement(SELECT_DESCRIPTION);
+		GWMpartSelects.addElement(\"attribute[Calculated Weight]\");
+GWMpartSelects.addElement(\"attribute[GWMCPartName]\");
+		GWMpartSelects.addElement(\"attribute[GWMCVendorCode]\");
+GWMRelEBOMSelects.addElement(\"attribute[Quantity]\");
+		GWMRelEBOMSelects.addElement(SELECT_RELATIONSHIP_ID);
+		GWMRelEBOMSelects.addElement(SELECT_RELATIONSHIP_NAME);
+
+		GWMMaterialSelects.addElement(SELECT_ID);
+		GWMMaterialSelects.addElement(SELECT_NAME);
+
+		GWMRelComponentMaterialSelects.addElement(SELECT_RELATIONSHIP_ID);
+		GWMRelComponentMaterialSelects.addElement(\"attribute[Quantity Unit Of Measure]\");
+		GWMRelComponentMaterialSelects.addElement(\"attribute[Quantity]\");
+		
+		GWMSubstanceSelects.addElement(SELECT_ID);
+		GWMSubstanceSelects.addElement(SELECT_NAME);
+		GWMSubstanceSelects.addElement(\"attribute[CAS Number]\");
+		GWMSubstanceSelects.addElement(\"attribute[GWM GADSL]\");
+GWMSubstanceSelects.addElement(\"attribute[Substance Name]\");
+//BY
+GWMSubstanceSelects.addElement(\"attribute[GWM REACH]\");
+
+		GWMRelComponentSubstanceSelects.addElement(SELECT_RELATIONSHIP_ID);
+		GWMRelComponentSubstanceSelects.addElement(SELECT_RELATIONSHIP_NAME);
+		GWMRelComponentSubstanceSelects.addElement(\"attribute[Quantity Unit Of Measure]\");
+		GWMRelComponentSubstanceSelects.addElement(\"attribute[Quantity]\");
+
+	}
+
+	public Hashtable getMEP (Context context, DomainObject dmSupplierPart) throws Exception {
+		//System.out.println(\"getMEP STARTS NEWddddddddddddddddddddddddddddd44444444444444444444444\");
+		Hashtable htMEP = null;
+		String sRelManufacturerEquivalent = PropertyUtil.getSchemaProperty(\"relationship_ManufacturerEquivalent\");
+		MapList mlImmMEP = dmSupplierPart.getRelatedObjects(context, 
+											sRelManufacturerEquivalent,
+											\"*\",
+											false,
+											true,
+											(short)1,
+											GWMMEPSelects,
+											GWMRelManfEqiSelects,
+											null, 
+											null,
+											null,
+											null,
+											null);
+		if (mlImmMEP.size() > 0)
+		{
+			//System.out.println(\"mlImmMEP >>\" + mlImmMEP);
+			htMEP = (Hashtable) mlImmMEP.get(0);
+		} else {
+			//System.out.println(\"No connected Material !!\");
+		}
+		//System.out.println(\"getMEP ENDS NEW\");
+		return htMEP;
+	}
+
+	public Hashtable getMEPEx (Context context, DomainObject dmSupplierPart) throws Exception {
+		System.out.println(\"getMEP STARTS NEW\");
+		Hashtable htMEP = null;
+		String sRelManufacturerEquivalent = PropertyUtil.getSchemaProperty(\"relationship_ManufacturerEquivalent\");
+		StringList mepSelects = new StringList();
+		mepSelects.addElement(SELECT_ID);
+		StringList mepRelSelects = new StringList();
+		mepRelSelects.addElement(SELECT_RELATIONSHIP_ID);
+		MapList mlImmMEP = dmSupplierPart.getRelatedObjects(context, 
+											sRelManufacturerEquivalent,
+											\"*\",
+											false,
+											true,
+											(short)1,
+											mepSelects,
+											mepRelSelects,
+											null, 
+											null,
+											null,
+											null,
+											null);
+		if (mlImmMEP.size() > 0)
+		{
+			System.out.println(\"mlImmMEP4444444444444444444444444444444444444444 >>\" + mlImmMEP);
+			htMEP = (Hashtable) mlImmMEP.get(0);
+		} else {
+			System.out.println(\"No connected Material !!\");
+		}
+		System.out.println(\"getMEP ENDS NEW\");
+		return htMEP;
+	}
+
+	/**public MapList generateMaterialClassificationReport(Context context, String[] args) throws Exception {
+		System.out.println(\"generateMaterialClassificationReport STARTS\");
+		MapList partList = new MapList();
+		Hashtable htGWMPart = null;
+		DomainObject dmPart = new DomainObject();
+		String level1Name = \"\";
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String classType = (String) programMap.get(\"classType\");
+		//System.out.println(\"Class Type is :\"+classType);
+			StringList slFinalPartList = new StringList();
+			String sTypeT1SupplierPart = PropertyUtil.getSchemaProperty(\"type_T1SupplierPart\");
+		//System.out.println(\"sTypeT1SupplierPart is :\"+classType);
+			String sRelManufacturerEquivalent = PropertyUtil.getSchemaProperty(\"relationship_ManufacturerEquivalent\");
+		//System.out.println(\"sRelManufacturerEquivalent is :\"+sRelManufacturerEquivalent);
+			String sRelComponentMaterial = PropertyUtil.getSchemaProperty(\"relationship_ComponentMaterial\");
+		//System.out.println(\"sRelComponentMaterial :\"+classType);
+			String sRelEBOM = PropertyUtil.getSchemaProperty(context,\"relationship_EBOM\");
+		//System.out.println(\"Class Type is :\"+classType);
+		
+			StringList partSelects = new StringList();
+			partSelects.addElement(SELECT_ID);
+			partSelects.addElement(SELECT_NAME);
+			partSelects.addElement(SELECT_TYPE);
+			partSelects.addElement(SELECT_REVISION);
+			partSelects.addElement(SELECT_DESCRIPTION);
+			partSelects.addElement(\"attribute[GWM English Part Name]\");
+partSelects.addElement(\"attribute[Calculated Weight]\");
+partSelects.addElement(\"attribute[GWMCPartName]\");
+			StringList ebomSelects = new StringList();
+			ebomSelects.addElement(SELECT_RELATIONSHIP_ID);
+			ebomSelects.addElement(SELECT_RELATIONSHIP_NAME);
+			ebomSelects.addElement(\"attribute[Quantity]\");
+
+			StringList matSelects = new StringList();
+			matSelects.addElement(SELECT_ID);
+			matSelects.addElement(SELECT_NAME);
+			matSelects.addElement(\"attribute[GWM Classification]\");
+
+			StringList matRelSelects = new StringList();
+			matRelSelects.addElement(SELECT_RELATIONSHIP_ID);
+		
+			
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			// Calls the method which directly accepts the Object ID
+			MapList mapList = dmCarPart.getRelatedObjects(context, 
+															sRelEBOM,
+															\"*\",
+															false,
+															true,
+															(short)0,
+															partSelects, 
+															ebomSelects, 
+															null, 
+															null,
+															null,
+															null,
+															null);
+			System.out.println(\"All Parts >>\" + mapList);
+			//mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"integer\");
+//mapList.sortStructure();
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			while (itr.hasNext())
+			{
+				
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String htRev = (String) htPart.get(SELECT_REVISION);
+String level = (String) htPart.get(SELECT_LEVEL);
+String sDesc = (String) htPart.get(SELECT_DESCRIPTION);
+
+				String htEngPartName = (String) htPart.get(SELECT_DESCRIPTION);
+				String ppName = (String) htPart.get(\"attribute[GWMCPartName]\");
+				String htDesc = (String) htPart.get(\"attribute[GWM English Part Name]\");
+				String htRelName = (String) htPart.get(SELECT_RELATIONSHIP_NAME);
+String htCalWeight = (String) htPart.get(\"attribute[Calculated Weight]\");
+String ebomqt = (String)htPart.get(\"attribute[Quantity]\");
+Float fhtCalWeight = new Float(1.0f);
+Float febomqt = new Float(1.0f);
+				if (htCalWeight != null && !\"null\".equals(htCalWeight) && !\"\".equals(htCalWeight))
+				{
+					 fhtCalWeight = Float.valueOf(htCalWeight);
+				}
+				if (ebomqt != null && !\"null\".equals(ebomqt) && !\"\".equals(ebomqt))
+				{
+					 febomqt = Float.valueOf(ebomqt);
+				}
+				Float fCalW =  fhtCalWeight * febomqt;
+if(level.equals(\"1\")){
+	level1Name = ppName;
+
+}
+				if (htType.equals(sTypeT1SupplierPart))
+				{
+					// get MEP and in turn get all GADSL substances Supplier Part -- 1:1--> MEP
+					System.out.println(\"Getting Materials for Supplier Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					DomainObject dmGWMSupplierPart = new DomainObject(htID);
+					String sParentGWMPartName = dmGWMSupplierPart.getInfo(context, \"to[EBOM].from.name\");
+					String sParentGWMPartId = dmGWMSupplierPart.getInfo(context, \"to[EBOM].from.id\");
+					String sParentType = \"\";
+					String sParentRev = \"\";
+					String sParentDesc = \"\";
+					String sParentEngPartName = \"\";
+					if (sParentGWMPartId != null && !\"\".equals(sParentGWMPartId) && !\"null\".equals(sParentGWMPartId))
+					{
+						dmPart.setId(sParentGWMPartId);
+						sParentType = dmPart.getInfo(context, DomainObject.SELECT_TYPE);
+						sParentRev = dmPart.getInfo(context, DomainObject.SELECT_REVISION);
+						sParentEngPartName = dmPart.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+						sParentDesc = dmPart.getInfo(context, \"attribute[GWM English Part Name]\");
+					}
+					//System.out.println(\"sParentGWMPartName >>\" + sParentGWMPartName);
+					//System.out.println(\"sParentGWMPartId >>\" + sParentGWMPartId);
+
+					Hashtable htMEP = getMEPEx(context, dmGWMSupplierPart);
+					if (htMEP != null)
+					{
+
+
+//ADD YKJ START
+						String pName = \"\";
+		String pName1 = \"\"; 
+		
+String sName = \"\";
+						//DomainObject dmGWMSupplierPart = new DomainObject(htID);
+					String sDesc1 = \"\";
+					sName = sName + \"/\" + sDesc + \"/\";
+					
+						String sType = \"\";
+String sParentGWMPartId1 = dmGWMSupplierPart.getInfo(context, \"to[EBOM].from.id\");
+					//while (sParentGWMPartId1 != null && !\"\".equals(sParentGWMPartId1) && !\"null\".equals(sParentGWMPartId1))
+						do{
+						DomainObject dmPart1 = new DomainObject();
+						dmPart1.setId(sParentGWMPartId1);
+						pName1 = (String) dmPart1.getInfo(context, \"attribute[\" + \"GWMCPartName\" + \"]\");
+						sDesc1 = dmPart1.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+						String id1 = dmPart1.getInfo(context, DomainObject.SELECT_NAME);
+						sType = dmPart1.getInfo(context, DomainObject.SELECT_TYPE);
+						sName = sName + \"/\" + pName1 + \"/\" + sDesc1;
+						//if(htName.equals(\"APE_SMD187509\"))
+						System.out.println(\"%%%%%%%%%%%%%%htID:\"+htName+\"%%%%%%%%%%%%%%%level:\"+id1+\"&&&&&&&\"+pName1);
+						
+sParentGWMPartId1 = dmPart1.getInfo(context, \"to[EBOM].from.id\");
+					}while(!sType.equals(\"Part\"));
+					
+String dName = \"\";
+String[] cName = sName.split(\"/\");
+for(int i = cName.length - 1; i > 0; i--){
+if(!cName[i].equals(\"\")){
+	if(!dName.equals(\"\"))
+	dName = dName + \"/\" + cName[i];
+	else
+		dName =cName[i];
+}
+}
+
+//END
+
+
+
+
+						String sMEPId = (String) htMEP.get(SELECT_ID);
+						// One and only MEP. Now get all materials related to this MEP
+						DomainObject dmMEP = new DomainObject(sMEPId);
+						MapList mlMEPMaterails = dmMEP.getRelatedObjects(context, 
+															sRelComponentMaterial,
+															\"Material\",
+															false,
+															true,
+															(short)1,
+															matSelects,
+															matRelSelects,
+															null, 
+															null,
+															null,
+															null,
+															null);
+						Iterator matItr = mlMEPMaterails.iterator();
+						while (matItr.hasNext())
+						{
+							Hashtable htMat = (Hashtable) matItr.next();
+							String sMatId = (String) htMat.get(SELECT_ID);
+							String sMatName = (String) htMat.get(SELECT_NAME);
+							String sGWMClass = (String) htMat.get(\"attribute[GWM Classification]\");
+							sName = dName + \"/\" + sMatName;
+							if (sGWMClass != null && !\"null\".equals(sGWMClass) && !\"\".equals(sGWMClass) && classType.equals(sGWMClass))
+							{
+								htGWMPart = new Hashtable();
+								htGWMPart.put(\"PartType\",sParentType);
+								htGWMPart.put(\"PartName\",sParentGWMPartName);
+								htGWMPart.put(\"PartRev\",sParentRev);
+								htGWMPart.put(\"EngPartName\",sParentEngPartName);
+								htGWMPart.put(\"Desc\",sParentDesc);
+htGWMPart.put(\"Mweight\",fCalW.toString());
+htGWMPart.put(\"Mname\",sMatName);
+htGWMPart.put(\"Mpath\",sName);
+								partList.add(htGWMPart);
+								break;
+							}
+						} // while each material ends
+					}
+
+				} else {
+					// there will be 3 cases for this. 
+					// 1. this is end item gwm part with no supplier part but MEP>>Materials
+					// 2. this is end item gwm part with sup part which in turn connected with MEP>>Materials
+					// 3. this is a middle level part for eg. Car Part >> ...>>This part>>...>>Sup Part>>MEP>>Material
+					System.out.println(\"GWM Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					DomainObject dmGWMPart = new DomainObject(htID);
+					// If it is end item GWM Part then check if Supplier Part/MEP is recyclable or not
+					StringList sNextEBOMIds = dmGWMPart.getInfoList(context, \"from[EBOM].to.id\");
+					StringList sNextEBOMTypes  = dmGWMPart.getInfoList(context, \"from[EBOM].to.type\");
+					if (sNextEBOMIds != null && sNextEBOMIds.size() > 0)
+					{
+						// this could be case 2 Most common
+						if (sNextEBOMTypes != null && sNextEBOMTypes.contains(sTypeT1SupplierPart))
+						{
+							System.out.println(\"Case 2. this is end item gwm part with sup part\");
+						} else {
+							//this is case 3 so skip this part and continue
+							System.out.println(\"Case 3. this is a middle level part\");
+							continue;
+						}
+					} else {
+						// this is case 1.this is end item gwm part with no supplier part but MEP>>Materials
+						System.out.println(\"Case 1. this is end item gwm part with no supplier part but MEP>>Materials\");
+						Hashtable htMEP = getMEPEx(context, dmGWMPart);
+						if (htMEP != null)
+						{
+
+//ADD BY YKJ			
+String sName1 = \"\";
+							String pName1 = \"\";
+		String pName2 = \"\"; 
+		
+						DomainObject dmGWMPart1 = new DomainObject(htID);
+					String sDesc2 = \"\";
+					sName1 = sName1 + \"/\" + sDesc + \"/\" + ppName + \"/\";
+					String sType = \"\";
+						
+String sParentGWMPartId2 = dmGWMPart1.getInfo(context, \"to[EBOM].from.id\");
+					//while (sParentGWMPartId2 != null && !\"\".equals(sParentGWMPartId2) && !\"null\".equals(sParentGWMPartId2))
+					do{
+						dmPart.setId(sParentGWMPartId2);
+						pName2 = (String) dmPart.getInfo(context, \"attribute[\" + \"GWMCPartName\" + \"]\");
+						sDesc2 = dmPart.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+						String id1 = dmPart.getInfo(context, DomainObject.SELECT_NAME);
+						sType = dmPart.getInfo(context, DomainObject.SELECT_TYPE);
+						sName1 = sName1 + \"/\" + pName2 + \"/\" + sDesc2;
+						
+						//System.out.println(\"%%%%%%%%%%%%%%htID:\"+htName+\"%%%%%%%%%%%%%%%level:\"+id1+\"dddddddd\"+pName2);
+						
+sParentGWMPartId2 = dmPart.getInfo(context, \"to[EBOM].from.id\");
+					}while(!sType.equals(\"Part\"));
+
+String dName1 = \"\";
+String[] cName1 = sName1.split(\"/\");
+for(int i = cName1.length - 1; i > 0; i--){
+if(!cName1[i].equals(\"\")){
+	if(!dName1.equals(\"\"))
+	dName1 = dName1 + \"/\" + cName1[i];
+	else
+		dName1 =cName1[i];
+}
+}
+//END
+
+
+
+							System.out.println(\"Found MEP >>\" + htMEP);
+							String sMEPId = (String) htMEP.get(SELECT_ID);
+							// One and only MEP. Now get all materials related to this MEP
+							DomainObject dmMEP = new DomainObject(sMEPId);
+							MapList mlMEPMaterails = dmMEP.getRelatedObjects(context, 
+																sRelComponentMaterial,
+																\"Material\",
+																false,
+																true,
+																(short)0,
+																matSelects,
+																matSelects,
+																null, 
+																null,
+																null,
+																null,
+																null);
+							Iterator matItr = mlMEPMaterails.iterator();
+							while (matItr.hasNext())
+							{
+								Hashtable htMat = (Hashtable)matItr.next();
+								String sMatId = (String) htMat.get(SELECT_ID);
+								String sMatName = (String) htMat.get(SELECT_NAME);
+								String sGWMClass = (String) htMat.get(\"attribute[GWM Classification]\");
+								sName1 = dName1 + \"/\" + sMatName;
+								if (sGWMClass != null && !\"null\".equals(sGWMClass) && !\"\".equals(sGWMClass) && classType.equals(sGWMClass))
+								{
+
+									htGWMPart = new Hashtable();
+									htGWMPart.put(\"PartType\",htType);
+									htGWMPart.put(\"PartName\",htName);
+									htGWMPart.put(\"PartRev\",htRev);
+									htGWMPart.put(\"EngPartName\",htEngPartName);
+									htGWMPart.put(\"Desc\", htDesc );
+									htGWMPart.put(\"Mweight\",fCalW.toString());
+htGWMPart.put(\"Mname\",sMatName);
+htGWMPart.put(\"Mpath\",sName1);
+									partList.add(htGWMPart);
+									break;
+								} 
+							}// while each material
+						} //if mep found
+					}//case 1. ends
+				}// else gwm part ends
+			}// while each part
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} 
+		System.out.println(\"generateMaterialClassificationReport ENDS\");
+		return partList;
+
+	}**/
+
+
+
+
+
+		public MapList generateMaterialClassificationReport(Context context, String[] args) throws Exception {
+		System.out.println(\"generateMaterialClassificationReport STARTS\");
+		MapList partList = new MapList();
+		Hashtable htGWMPart = null;
+		DomainObject dmPart = new DomainObject();
+		String level1Name = \"\";
+		String sName = \"\";
+		String sDesc = \"\";
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String classType = (String) programMap.get(\"classType\");
+		//System.out.println(\"Class Type is :\"+classType);
+			StringList slFinalPartList = new StringList();
+			String sTypeT1SupplierPart = PropertyUtil.getSchemaProperty(\"type_T1SupplierPart\");
+		//System.out.println(\"sTypeT1SupplierPart is :\"+classType);
+			String sRelManufacturerEquivalent = PropertyUtil.getSchemaProperty(\"relationship_ManufacturerEquivalent\");
+		//System.out.println(\"sRelManufacturerEquivalent is :\"+sRelManufacturerEquivalent);
+			String sRelComponentMaterial = PropertyUtil.getSchemaProperty(\"relationship_ComponentMaterial\");
+		//System.out.println(\"sRelComponentMaterial :\"+classType);
+			String sRelEBOM = PropertyUtil.getSchemaProperty(context,\"relationship_EBOM\");
+		//System.out.println(\"Class Type is :\"+classType);
+		
+			StringList partSelects = new StringList();
+			partSelects.addElement(SELECT_ID);
+			partSelects.addElement(SELECT_NAME);
+			partSelects.addElement(SELECT_TYPE);
+			partSelects.addElement(SELECT_REVISION);
+			partSelects.addElement(SELECT_DESCRIPTION);
+			partSelects.addElement(\"attribute[GWM English Part Name]\");
+partSelects.addElement(\"attribute[Calculated Weight]\");
+partSelects.addElement(\"attribute[GWMCPartName]\");
+			StringList ebomSelects = new StringList();
+			ebomSelects.addElement(SELECT_RELATIONSHIP_ID);
+			ebomSelects.addElement(SELECT_RELATIONSHIP_NAME);
+			ebomSelects.addElement(\"attribute[Quantity]\");
+
+			StringList matSelects = new StringList();
+			matSelects.addElement(SELECT_ID);
+			matSelects.addElement(SELECT_NAME);
+			matSelects.addElement(\"attribute[GWM Classification]\");
+
+			StringList matRelSelects = new StringList();
+			matRelSelects.addElement(SELECT_RELATIONSHIP_ID);
+		matRelSelects.addElement(\"attribute[Quantity]\");
+			
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			// Calls the method which directly accepts the Object ID
+			MapList mapList = dmCarPart.getRelatedObjects(context, 
+															sRelEBOM,
+															\"*\",
+															false,
+															true,
+															(short)0,
+															partSelects, 
+															ebomSelects, 
+															null, 
+															null,
+															null,
+															null,
+															null);
+			System.out.println(\"All Parts >>\" + mapList);
+			//mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"integer\");
+mapList.sortStructure();
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			while (itr.hasNext())
+			{
+				
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String htRev = (String) htPart.get(SELECT_REVISION);
+String level = (String) htPart.get(SELECT_LEVEL);
+//String sDesc = (String) htPart.get(SELECT_DESCRIPTION);
+
+				String htEngPartName = (String) htPart.get(SELECT_DESCRIPTION);
+				String ppName = (String) htPart.get(\"attribute[GWMCPartName]\");
+				String htDesc = (String) htPart.get(\"attribute[GWM English Part Name]\");
+				String htRelName = (String) htPart.get(SELECT_RELATIONSHIP_NAME);
+String htCalWeight = (String) htPart.get(\"attribute[Calculated Weight]\");
+String ebomqt = (String)htPart.get(\"attribute[Quantity]\");
+Float fhtCalWeight = new Float(1.0f);
+Float febomqt = new Float(1.0f);
+				if (htCalWeight != null && !\"null\".equals(htCalWeight) && !\"\".equals(htCalWeight))
+				{
+					 fhtCalWeight = Float.valueOf(htCalWeight);
+				}
+				if (ebomqt != null && !\"null\".equals(ebomqt) && !\"\".equals(ebomqt))
+				{
+					 febomqt = Float.valueOf(ebomqt);
+				}
+				Float fCalW =  fhtCalWeight * febomqt;
+
+
+
+if(htType.equals(\"Part\"))
+				{
+					DomainObject dmGWMPart = new DomainObject(htID);					
+					StringList sNextEBOMIds = dmGWMPart.getInfoList(context, \"from[EBOM].to.id\");
+					StringList sNextEBOMTypes  = dmGWMPart.getInfoList(context, \"from[EBOM].to.type\");
+
+					//for (int i=0; i<sNextEBOMIds.size(); i++)
+						//	{
+							//	String sSupId = (String) sNextEBOMIds.get(i);
+							//	DomainObject dmGWMSupplierPart = new DomainObject(sSupId);
+							//	if (sTypeT1SupplierPart.equals(dmGWMSupplierPart.getInfo(context, DomainObject.SELECT_TYPE)))
+							//	{
+								if (sNextEBOMTypes.contains(sTypeT1SupplierPart))
+								{
+									
+sName = \"\";
+sName = ppName;
+
+MapList mapList1 = dmGWMPart.getRelatedObjects(context, 
+															sRelEBOM,
+															sTypeT1SupplierPart,
+				                                           
+															false,
+															true,
+															(short)0,
+															 partSelects, 
+															ebomSelects,
+															null, 
+															null,
+															null,
+															null,
+															null);
+			
+			//mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"string\");
+mapList1.sortStructure();
+			Iterator itr1 = mapList1.iterator();
+			//HashMap hmPartsMass = new HashMap();
+			
+			while (itr1.hasNext())
+			{
+
+Hashtable htPart1 = (Hashtable) itr1.next();
+				String htID1 = (String) htPart1.get(SELECT_ID);
+				String htType1 = (String) htPart1.get(SELECT_TYPE);
+
+			if(htType1.equals(sTypeT1SupplierPart))						
+				{									//HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sSupId);
+
+String sDesc1 = (String) htPart1.get(SELECT_DESCRIPTION);
+String sName1 = (String) htPart1.get(SELECT_NAME);
+sDesc = sDesc + \"/\" + sDesc1;
+
+
+
+
+
+
+
+
+
+
+
+
+				//if (htType.equals(sTypeT1SupplierPart))
+				//{
+					// get MEP and in turn get all GADSL substances Supplier Part -- 1:1--> MEP
+					System.out.println(\"Getting Materials for Supplier Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					DomainObject dmGWMSupplierPart = new DomainObject(htID1);
+					String sParentGWMPartName = dmGWMSupplierPart.getInfo(context, \"to[EBOM].from.name\");
+					String sParentGWMPartId = dmGWMSupplierPart.getInfo(context, \"to[EBOM].from.id\");
+					String sParentType = \"\";
+					String sParentRev = \"\";
+					String sParentDesc = \"\";
+					String sParentEngPartName = \"\";
+					if (sParentGWMPartId != null && !\"\".equals(sParentGWMPartId) && !\"null\".equals(sParentGWMPartId))
+					{
+						dmPart.setId(sParentGWMPartId);
+						sParentType = dmPart.getInfo(context, DomainObject.SELECT_TYPE);
+						sParentRev = dmPart.getInfo(context, DomainObject.SELECT_REVISION);
+						sParentEngPartName = dmPart.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+						sParentDesc = dmPart.getInfo(context, \"attribute[GWM English Part Name]\");
+					}
+					//System.out.println(\"sParentGWMPartName >>\" + sParentGWMPartName);
+					//System.out.println(\"sParentGWMPartId >>\" + sParentGWMPartId);
+
+					Hashtable htMEP = getMEPEx(context, dmGWMSupplierPart);
+					if (htMEP != null)
+					{
+
+
+
+
+
+
+
+						String sMEPId = (String) htMEP.get(SELECT_ID);
+						// One and only MEP. Now get all materials related to this MEP
+						DomainObject dmMEP = new DomainObject(sMEPId);
+						MapList mlMEPMaterails = dmMEP.getRelatedObjects(context, 
+															sRelComponentMaterial,
+															\"*\",
+															false,
+															true,
+															(short)1,
+															matSelects,
+															matRelSelects,
+															null, 
+															null,
+															null,
+															null,
+															null);
+						Iterator matItr = mlMEPMaterails.iterator();
+						while (matItr.hasNext())
+						{
+							Hashtable htMat = (Hashtable) matItr.next();
+							String sMatId = (String) htMat.get(SELECT_ID);
+							String sMatName = (String) htMat.get(SELECT_NAME);
+							String sGWMClass = (String) htMat.get(\"attribute[GWM Classification]\");
+String sQuantity = (String) htMat.get(\"attribute[Quantity]\");
+							if (sQuantity != null && !\"null\".equals(sQuantity) && !\"\".equals(sQuantity))
+				{
+					 fhtCalWeight = Float.valueOf(sQuantity);
+
+				}
+				Float fweight = fhtCalWeight * febomqt;
+							//sName = dName + \"/\" + sMatName;
+							if (sGWMClass != null && !\"null\".equals(sGWMClass) && !\"\".equals(sGWMClass) && classType.equals(sGWMClass))
+							{
+								htGWMPart = new Hashtable();
+								htGWMPart.put(\"PartType\",sParentType);
+								htGWMPart.put(\"PartName\",sParentGWMPartName);
+								htGWMPart.put(\"PartRev\",sParentRev);
+								htGWMPart.put(\"EngPartName\",sParentEngPartName);
+								htGWMPart.put(\"Desc\",sParentDesc);
+htGWMPart.put(\"Mweight\",fweight.toString());
+htGWMPart.put(\"Mname\",sMatName);
+htGWMPart.put(\"Mpath\",sName + sDesc+\"/\"+sMatName);
+								partList.add(htGWMPart);
+								break;
+							}
+						} // while each material ends
+						sDesc = \"\";
+					}
+
+				}
+				}
+				}
+			}
+				
+			}// while each part
+								
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} 
+		System.out.println(\"generateMaterialClassificationReport ENDS\");
+		return partList;
+
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public MapList generateGADSLSubstancesReport(Context context, String[] args) throws Exception {
+
+		System.out.println(\"generateGADSLSubstancesReport STARTS NEW44444\");
+		MapList mlSubs = new MapList();
+		Hashtable htGWMSub = null;
+		DomainObject dmPart = new DomainObject();
+		String level1Name = \"\";
+		String sName = \"\";
+		String sDesc = \"\";
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String strObjectId = (String) programMap.get(\"objectId\");
+			StringList slFinalPartList = new StringList();
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			String sTypeT1SupplierPart = PropertyUtil.getSchemaProperty(\"type_T1SupplierPart\");
+			String sRelManufacturerEquivalent = PropertyUtil.getSchemaProperty(\"relationship_ManufacturerEquivalent\");
+			String sRelComponentMaterial = PropertyUtil.getSchemaProperty(\"relationship_ComponentMaterial\");
+			String sRelComponentSubstance = PropertyUtil.getSchemaProperty(\"relationship_ComponentSubstance\");
+			String sRelEBOM = PropertyUtil.getSchemaProperty(context,\"relationship_EBOM\");
+			setCommonSelects();
+			
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			//String sType = dmPart.getInfo(context, DomainObject.SELECT_TYPE);
+			// Calls the method which directly accepts the Object ID
+			//MapList mapList = 
+//MapList mapList = getSingleLevelEBOMStructureWithMEP(context, strObjectId,
+					//	\"relationship_EBOM,relationship_ManufacturerEquivalent\",
+					//	\"type_Part\");
+	//MapList mapList = getEBOMStructureWithMEP(context, strObjectId, \"relationship_EBOM\",
+			//	\"type_Part\");
+			MapList mapList = dmCarPart.getRelatedObjects(context, 
+															sRelEBOM,
+															\"*\",
+				                                           
+															false,
+															true,
+															(short)0,
+															  GWMpartSelects, 
+															GWMRelEBOMSelects,
+															null, 
+															null,
+															null,
+															null,
+															null);
+			
+			//mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"string\");
+mapList.sortStructure();
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			int hlevel = 0;
+			while (itr.hasNext())
+			{
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String level = (String) htPart.get(SELECT_LEVEL);
+				int slevel = Integer.parseInt(level);
+				String htRev = (String) htPart.get(SELECT_REVISION);
+String ppName = (String) htPart.get(\"attribute[GWMCPartName]\");
+String htVendorCode = (String) htPart.get(\"attribute[GWMCVendorCode]\");
+//String sDesc = (String) htPart.get(SELECT_DESCRIPTION);
+Float fCalWeight = new Float(1.0f);
+String htCalWeight = (String) htPart.get(\"attribute[Calculated Weight]\");
+				if (htCalWeight != null && !\"null\".equals(htCalWeight) && !\"\".equals(htCalWeight) && !\"0.0\".equals(htCalWeight))
+				{
+					 fCalWeight = Float.valueOf(htCalWeight);
+				}
+					
+
+if(htType.equals(\"Part\"))
+				{
+					DomainObject dmGWMPart = new DomainObject(htID);					
+					StringList sNextEBOMIds = dmGWMPart.getInfoList(context, \"from[EBOM].to.id\");
+					StringList sNextEBOMTypes  = dmGWMPart.getInfoList(context, \"from[EBOM].to.type\");
+
+					//for (int i=0; i<sNextEBOMIds.size(); i++)
+						//	{
+							//	String sSupId = (String) sNextEBOMIds.get(i);
+							//	DomainObject dmGWMSupplierPart = new DomainObject(sSupId);
+							//	if (sTypeT1SupplierPart.equals(dmGWMSupplierPart.getInfo(context, DomainObject.SELECT_TYPE)))
+							//	{
+								if (sNextEBOMTypes.contains(sTypeT1SupplierPart))
+								{
+									
+sName = \"\";
+sName = ppName;
+
+MapList mapList1 = dmGWMPart.getRelatedObjects(context, 
+															sRelEBOM,
+															sTypeT1SupplierPart,
+				                                           
+															false,
+															true,
+															(short)0,
+															  GWMpartSelects, 
+															GWMRelEBOMSelects,
+															null, 
+															null,
+															null,
+															null,
+															null);
+			
+			//mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"string\");
+mapList1.sortStructure();
+			Iterator itr1 = mapList1.iterator();
+			//HashMap hmPartsMass = new HashMap();
+			
+			while (itr1.hasNext())
+			{
+
+Hashtable htPart1 = (Hashtable) itr1.next();
+				String htID1 = (String) htPart1.get(SELECT_ID);
+				String htType1 = (String) htPart1.get(SELECT_TYPE);
+
+			if(htType1.equals(sTypeT1SupplierPart))						
+				{									//HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sSupId);
+
+String sDesc1 = (String) htPart1.get(SELECT_DESCRIPTION);
+String sName1 = (String) htPart1.get(SELECT_NAME);
+String ebomqt = (String)htPart1.get(\"attribute[Quantity]\");
+Float febomqt = new Float(1.0f);
+if (ebomqt != null && !\"null\".equals(ebomqt) && !\"\".equals(ebomqt))
+				{
+					 febomqt = Float.valueOf(ebomqt);
+				}
+
+
+
+sDesc = sDesc + \"/\" + sDesc1;
+
+System.out.println(\"$$$$$$$$$$$$4444PARTNAME:\"+htName+\"^^^^^^^^^^^^^^^^spartname:\"+sName1);
+
+
+
+
+
+				///	if (sNextEBOMIds != null && sNextEBOMIds.size() > 0)
+					//{
+						// this could be case 2 Most common
+					//	if (htType.equals(\"Part\") && sNextEBOMTypes != null && sNextEBOMTypes.contains(sTypeT1SupplierPart))
+					//	{sName = \"\";
+					//	sName =sName + \"/\" + ppName;
+					//	hlevel = slevel;
+					//	}
+					//}
+
+//if (htType.equals(sTypeT1SupplierPart))
+				//{
+	//if(sNextEBOMIds == null || sNextEBOMIds.size() == 0)
+					//sDesc = \"\";
+					// get MEP and in turn get all GADSL substances Supplier Part -- 1:1--> MEP
+					DomainObject dmGWMSupplierPart = new DomainObject(htID1);
+					
+					String sParentGWMPartName = dmGWMSupplierPart.getInfo(context, \"to[EBOM].from.name\");
+					String sParentGWMPartId = dmGWMSupplierPart.getInfo(context, \"to[EBOM].from.id\");
+					String sParentType = \"\";
+					String sParentRev = \"\";
+					 
+					if (sParentGWMPartId != null && !\"\".equals(sParentGWMPartId) && !\"null\".equals(sParentGWMPartId))
+					{
+						dmPart.setId(sParentGWMPartId);
+						sParentType = dmPart.getInfo(context, DomainObject.SELECT_TYPE);
+						sParentRev = dmPart.getInfo(context, DomainObject.SELECT_REVISION);
+						//sDesc = dmPart.getInfo(context, DomainObject.SELECT_DESCRIPTION);
+					}
+					//if(!pName.equals(\"\"))
+					//sDesc =\"/\"+sDesc +\"/\"+pName;
+//System.out.println(\"%%%%%%%%%%%%%%%%%%%%%%parentType:\"+sParentType);
+//sDesc = sDesc + \"/\" + sDesc;
+					Hashtable htMEP = getMEP(context, dmGWMSupplierPart);
+					if (htMEP != null)
+					{
+
+				String sMEPId = (String) htMEP.get(SELECT_ID);
+						// One and only MEP. Now get all materials related to this MEP
+						DomainObject dmMEP = new DomainObject(sMEPId);
+						MapList mlMEPMaterails = dmMEP.getRelatedObjects(context, 
+															sRelComponentMaterial,
+															\"Material\",
+															false,
+															true,
+															(short)1,
+															GWMMaterialSelects,
+															GWMRelComponentMaterialSelects,
+															null, 
+															null,
+															null,
+															null,
+															null);
+						Iterator matItr = mlMEPMaterails.iterator();
+						while (matItr.hasNext())
+						{
+							Hashtable htMat = (Hashtable) matItr.next();
+							String sMatId = (String) htMat.get(SELECT_ID);
+							String sMatName = (String) htMat.get(SELECT_NAME);
+							String sMatQty = (String) htMat.get(\"attribute[Quantity]\");
+							Float fMatQty = new Float(1.0f);
+							//sDesc = sDesc + \"/\" + sMatName;
+							if (sMatQty != null && !\"null\".equals(sMatQty) && !\"\".equals(sMatQty) && !\"0.0\".equals(sMatQty))
+							{
+								 fMatQty = Float.valueOf(sMatQty);
+							}
+Float fQty =  febomqt  * fMatQty;
+							DomainObject dmMat = new DomainObject(sMatId);
+							MapList mlImmMEPSubs = dmMat.getRelatedObjects(context, 
+																sRelComponentSubstance,
+																\"Substance\",
+																false,
+																true,
+																(short)1,
+																GWMSubstanceSelects,
+																GWMRelComponentSubstanceSelects,
+																null, 
+																null,
+																null,
+																null,
+																null);
+							Iterator subItr = mlImmMEPSubs.iterator();
+							while (subItr.hasNext())
+							{
+								htGWMSub = new Hashtable();
+								Hashtable htSub = (Hashtable) subItr.next();
+								String sSubId = (String) htSub.get(SELECT_ID);
+								String sSubName = (String) htSub.get(SELECT_NAME);
+								String sSubChinaName = (String) htSub.get(\"attribute[Substance Name]\");
+								String sSubCASNumber = (String) htSub.get(\"attribute[CAS Number]\");
+								String sSubGADSL = (String) htSub.get(\"attribute[GWM GADSL]\");
+								if (sSubGADSL != null && !\"D\".equals(sSubGADSL) && !\"P\".equals(sSubGADSL) && !\"D/P\".equals(sSubGADSL) && !\"D/SVHC\".equals(sSubGADSL)&& !\"P/SVHC\".equals(sSubGADSL))
+								{
+									continue;
+								}
+								String sSubQty = (String) htSub.get(\"attribute[Quantity]\");
+								Float fSubQty = new Float(1.0f);
+								if (sSubQty != null && !\"null\".equals(sSubQty) && !\"\".equals(sSubQty) && !\"0.0\".equals(sSubQty))
+								{
+									 fSubQty = Float.valueOf(sSubQty);
+								}
+
+								//System.out.println(fSubQty + \"*\" + fMatQty + \"/\" + fCalWeight);
+								Float fQtyInPart = (fSubQty * fMatQty)/ fCalWeight;
+
+								htGWMSub.put(\"CASNumber\",sSubCASNumber);
+								htGWMSub.put(\"SubName\",sSubName);
+								htGWMSub.put(\"SubChinaName\",sSubChinaName);
+								htGWMSub.put(\"SubGADSL\",sSubGADSL);
+								htGWMSub.put(\"MatName\",sMatName);
+								//htGWMSub.put(\"MatQty\",sMatQty);
+htGWMSub.put(\"MatQty\",fQty.toString());
+								htGWMSub.put(\"CompSubQty\",sSubQty);
+								htGWMSub.put(\"PartType\",sParentType);
+								
+								htGWMSub.put(\"htPartName\",sName + sDesc+\"/\"+sMatName);
+								htGWMSub.put(\"PartName\",sParentGWMPartName);
+								htGWMSub.put(\"PartRev\",sParentRev);
+								htGWMSub.put(\"SubInPartQty\",fQtyInPart.toString());
+								htGWMSub.put(\"VendorCode\",htVendorCode);
+								mlSubs.add(htGWMSub);
+								
+							}//for each sub ends
+						}
+						sDesc = \"\";
+					}
+
+				} 
+
+
+			}
+			}
+			}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} 
+		
+		return mlSubs;
+
+	}
+
+
+	/**
+	 * Gets the directly connected Objects to context Object.
+	 *
+	 */
+
+	public HashMap generateRecyRecoReport(Context context, String[] args)
+		throws Exception
+	{
+		System.out.println(\"generateRecyRecoReport STARTS\");
+		BufferedWriter out = null;
+		HashMap hmFinalMassVars = null;
+		try {
+			String newLine = System.getProperty(\"line.separator\");
+			// The packed argument send from the JPO invoke method is unpacked
+			// to retrive the HashMap.
+			String sPath = context.createWorkspace();
+			String fileName = Calendar.getInstance().getTimeInMillis()+ \"log\";
+			String sFullFileName = sPath + System.getProperty(\"file.separator\") + fileName + \".txt\";
+			System.out.println(\"sFullFileName >>\" + sFullFileName);
+			out = new BufferedWriter(new FileWriter(sFullFileName));
+			System.out.println(\"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\");
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			// The object id of the context object is retrieved from the HashMap
+			// using the appropriate key.
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			String sCalWeight = dmCarPart.getInfo(context, \"attribute[\" + sAttrCalWeight + \"]\");
+			// Calls the method which directly accepts the Object ID
+			MapList mapList = getEBOMStructureWithMEP(context, strObjectId, \"relationship_EBOM,relationship_ManufacturerEquivalent\",
+				\"type_Part\");
+			mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"Integer\");
+			//System.out.println(\"Map >>\" + mapList);
+    //out.write(\"map >>    \"+mapList);
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			int cnt = 1;
+
+			while (itr.hasNext())
+			{
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htRelName = (String) htPart.get(SELECT_RELATIONSHIP_NAME);
+				String htAttrMassVariable = (String) htPart.get(\"attribute[GWM 22628 Mass Variable]\");
+				out.write(cnt + \". sPartName [\" + htName + \"] rel [\" + htRelName + \"] MV [\" + htAttrMassVariable + \"]\" + newLine);
+
+				//System.out.println(htName + \"<>\" + htType + \"<>\" + htRelName + \"<>\" + htAttrMassVariable);
+				if (htRelName.equals(\"EBOM\"))
+				{
+					// Get connected Parts using EBOM and Manufaturer Equivalent
+					MapList partList = getSingleLevelEBOMStructureWithMEP(context, htID, 
+						\"relationship_EBOM,relationship_ManufacturerEquivalent\",
+						\"type_Part\");
+					//System.out.println(\"partList >>\" + partList);
+					Iterator partItr = partList.iterator();
+					Float fPartMTotal = new Float(0.0f);
+					Float fPartMP = new Float(0.0f);
+					Float fPartMD = new Float(0.0f);
+					Float fPartMM = new Float(0.0f);
+					Float fPartMTr = new Float(0.0f);
+					Float fPartMTe = new Float(0.0f);
+					Float fPartMNo = new Float(0.0f);
+Float fPartMFluid = new Float(0.0f);
+					Float fPartMNonReused = new Float(0.0f);
+					int icnt = 1;
+					while (partItr.hasNext())
+					{
+						Hashtable htImmPart = (Hashtable) partItr.next();
+						String sPartName = (String) htImmPart.get(SELECT_NAME);
+
+						//out.write(newLine);
+						out.write(icnt + \". sPartName [\" + sPartName + \"]\" + newLine);
+
+
+						String sPartId = (String) htImmPart.get(SELECT_ID);
+						String sPartQty = (String) htImmPart.get(\"attribute[Quantity]\");
+						DomainObject dmImmPart = new DomainObject(sPartId);
+						String sImmPartCalculatedWeight = dmImmPart.getInfo(context, \"attribute[Calculated Weight]\");
+						Float fImmCalWeight = new Float(0.0f);
+						if(sImmPartCalculatedWeight != null && !sImmPartCalculatedWeight.equals(\"\"))
+						fImmCalWeight = Float.valueOf(sImmPartCalculatedWeight);
+						Float fPartQty = new Float(1.0f);
+						if (sPartQty != null && !\"null\".equals(sPartQty) && !\"\".equals(sPartQty) && !\"0.0\".equals(sPartQty))
+						{
+							 fPartQty = Float.valueOf(sPartQty);
+						}
+						//System.out.println(\"sPartName >>\" + sPartName + \" Qty >> \" + fPartQty);
+						HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sPartId);
+						if (hmImmPartMass != null)
+						{
+							Float fTotal = (Float) hmImmPartMass.get(\"mTotal\");
+							Float fMP = (Float) hmImmPartMass.get(\"mP\");
+							Float fMD = (Float) hmImmPartMass.get(\"mD\");
+							Float fMM = (Float) hmImmPartMass.get(\"mM\");
+							Float fMTr = (Float) hmImmPartMass.get(\"mTr\");
+							Float fMTe = (Float) hmImmPartMass.get(\"mTe\");
+  Float fMFluid = new Float(0.0f);
+							Float fMNo = (Float) hmImmPartMass.get(\"mNo\");
+							Float fMNonReused = (Float) hmImmPartMass.get(\"mNonreused\");
+							if (htAttrMassVariable != null && !\"null\".equals(htAttrMassVariable) && !\"\".equals(htAttrMassVariable)
+								&& \"mP\".equals(htAttrMassVariable))
+							{
+								//System.out.println(\"mass var is mP\");
+								Float fTempCalWeight = fImmCalWeight * fPartQty;
+								fTotal = fTotal * fPartQty;
+								fPartMTotal = fPartMTotal + fTotal;
+								fPartMP = fPartMP + fTempCalWeight;
+							} else if (htAttrMassVariable != null && !\"null\".equals(htAttrMassVariable) && !\"\".equals(htAttrMassVariable)
+										&& \"mD\".equals(htAttrMassVariable))
+							{
+								//System.out.println(\"mass var is mD\");
+								Float fTempCalWeight = fImmCalWeight * fPartQty;
+								fTotal = fTotal * fPartQty;
+								fPartMTotal = fPartMTotal + fTotal;
+								//fPartMD = fPartMD + fTotal;
+								fPartMD = fPartMD + fTempCalWeight;
+/*
+							} else if (htAttrMassVariable != null && !\"null\".equals(htAttrMassVariable) && !\"\".equals(htAttrMassVariable)
+										&& \"Non-Reusable\".equals(htAttrMassVariable))
+							{
+								//System.out.println(\"mass var is Unused\");
+								fMTe = fMTe * fPartQty;	
+								fPartMTe = fPartMTe + fMTe;
+								Float fTempCalWeight = fImmCalWeight * fPartQty;
+								fPartMNonReused = fPartMNonReused + fTempCalWeight;
+							} else  
+							{
+								//if (htAttrMassVariable == null || \"null\".equals(htAttrMassVariable) || \"\".equals(htAttrMassVariable) || \"Unassign\".equals(htAttrMassVariable))
+**/
+							} else  
+							{
+								//if (htAttrMassVariable == null || \"null\".equals(htAttrMassVariable) || \"\".equals(htAttrMassVariable) || \"Unassign\".equals(htAttrMassVariable || \"Non-Reusable\".equals(htAttrMassVariable))
+								//System.out.println(\"no mass var set\");
+								fTotal = fTotal * fPartQty;	
+								fPartMTotal = fPartMTotal + fTotal;
+								fMP = fMP * fPartQty;	
+								fPartMP = fPartMP + fMP;
+								fMD = fMD * fPartQty;	
+								fPartMD = fPartMD + fMD;
+								fMM = fMM * fPartQty;	
+								fPartMM = fPartMM + fMM;
+								fMTr = fMTr * fPartQty;	
+								fPartMTr = fPartMTr + fMTr;
+								fMTe = fMTe * fPartQty;
+								fPartMTe = fPartMTe + fMTe;
+fMFluid=fMFluid * fPartQty;
+fPartMFluid=fPartMFluid+fMFluid;
+
+								fMNo = fMNo * fPartQty;
+								fPartMNo = fPartMNo + fMNo;
+								fMNonReused = fMNonReused * fPartQty;
+								fPartMNonReused = fPartMNonReused + fMNonReused;
+							}
+							//System.out.println(\"for <\" + sPartName + \">\" + fPartMTotal+ \",\"+ fPartMP+\",\"+ fPartMD+\",\"+ fPartMM+\",\"+ fPartMTr+\",\"+ fPartMTe+\",\"+fPartMNo);
+						} else {
+							System.out.println(\"hmImmPartMass >> \" + hmImmPartMass);
+						}
+						icnt = icnt + 1;
+					}// While partList hasNext()
+					if (partList.size() == 0)
+					{
+						DomainObject immPart = new DomainObject(htID);
+						String iPartCalculatedWeight = immPart.getInfo(context, \"attribute[Calculated Weight]\");
+						if(iPartCalculatedWeight != null && !iPartCalculatedWeight.equals(\"\"))
+						{
+						Float immCalWeight = Float.valueOf(iPartCalculatedWeight);
+						if (htAttrMassVariable != null && !\"null\".equals(htAttrMassVariable) && !\"\".equals(htAttrMassVariable)
+							&& \"mP\".equals(htAttrMassVariable))
+						{
+							fPartMP = immCalWeight;
+						} else if (htAttrMassVariable != null && !\"null\".equals(htAttrMassVariable) && !\"\".equals(htAttrMassVariable)
+									&& \"mD\".equals(htAttrMassVariable))
+						{
+							System.out.println(\"mass var is mD\");
+							fPartMD = immCalWeight;
+						}
+						}
+/*						} else if (htAttrMassVariable != null && !\"null\".equals(htAttrMassVariable) && !\"\".equals(htAttrMassVariable)
+									&& \"Non-Reusable\".equals(htAttrMassVariable))
+						{
+							//System.out.println(\"mass var is Unused\");
+							fPartMNonReused = immCalWeight;
+                        }
+						**/
+					}
+					HashMap hmEnterprisePart = new HashMap();
+					hmEnterprisePart.put(\"mTotal\",fPartMTotal);
+					hmEnterprisePart.put(\"mP\",fPartMP );
+					hmEnterprisePart.put(\"mD\",fPartMD);
+					hmEnterprisePart.put(\"mM\",fPartMM );
+					hmEnterprisePart.put(\"mTr\",fPartMTr);
+					hmEnterprisePart.put(\"mTe\",fPartMTe);
+					hmEnterprisePart.put(\"mNo\",fPartMNo);
+					hmEnterprisePart.put(\"mNonreused\",fPartMNonReused);
+hmEnterprisePart.put(\"mFluid\",fPartMFluid);
+					hmPartsMass.put(htID, hmEnterprisePart);
+					out.write(htName + \",\"+ fPartMTotal+ \",\"+ fPartMP+\",\"+ fPartMD+\",\"+ fPartMM+\",\"+ fPartMTr+\",\"
+					+ fPartMTe + System.getProperty(\"line.separator\"));
+					//System.out.println(\"Processed >> \" + htName + \" & mass vars are >>\" + hmEnterprisePart);
+
+				} else if (htRelName.equals(\"Manufacturer Equivalent\"))
+				{
+					// Get connected Material
+					MapList materialList = getMEPMaterial(context, htID, 
+						\"relationship_ComponentMaterial\",
+						\"type_Material\");
+					Iterator matItr = materialList.iterator();
+					HashMap hmMaterialsMass = new HashMap();
+					while (matItr.hasNext())
+					{
+						Float fMatMTotal = new Float(0.0f);
+						Float fMatMP = new Float(0.0f);
+						Float fMatMD = new Float(0.0f);
+						Float fMatMM = new Float(0.0f);
+						Float fMatMTr = new Float(0.0f);
+						Float fMatMTe = new Float(0.0f);
+						Float fMatMNo = new Float(0.0f);
+						Float fMatMNonReused = new Float(0.0f);
+						Float fMatMFluid =new Float(0.0f);
+						HashMap hmMaterials = new HashMap();
+						Hashtable htMat = (Hashtable) matItr.next();
+						String sMaterialId = (String) htMat.get(SELECT_ID);
+						String sMaterialName = (String) htMat.get(SELECT_NAME);
+						String sTotal = (String) htMat.get(\"attribute[Quantity]\");
+						String sMaterialClassification = (String) htMat.get(\"attribute[GWM Classification]\");
+						String sMaterialRecy = (String) htMat.get(\"attribute[GWM recyclability]\");
+						String sMaterialReco = (String) htMat.get(\"attribute[GWM recoverability]\");
+						//System.out.println(\"sMaterialName >>\" + sMaterialName + \" >> \" + sTotal + \" >> \" + sMaterialClassification);
+						if (sMaterialClassification != null 
+							&& (sMaterialClassification.startsWith(\"1\") ||
+								sMaterialClassification.startsWith(\"2\") ||
+							sMaterialClassification.startsWith(\"3\") ||
+							sMaterialClassification.startsWith(\"4\")))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMM = fMatMTotal;
+                           //if (\"No\".equals(sMaterialRecy) && \"No\".equals(sMaterialReco)) {
+                            //    fMatMNo = fMatMTotal;
+                           //  }
+						} else if ((sMaterialClassification.startsWith(\"5\") ||
+										sMaterialClassification.startsWith(\"7.2\")) && \"Yes\".equals(sMaterialRecy))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMTr = fMatMTotal;
+						} else if ((sMaterialClassification.startsWith(\"5\") ||
+										sMaterialClassification.startsWith(\"7.1\")) && \"No\".equals(sMaterialRecy) 
+										&& \"Yes\".equals(sMaterialReco) /*&& !sMaterialClassification.startsWith(\"5.3\")**/)
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMTe = fMatMTotal;
+						} else if (\"No\".equals(sMaterialRecy) && \"No\".equals(sMaterialReco)) {
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMNo = fMatMTotal;
+							//add byxu add material classiciation start with 9 in MV
+                        } else if(sMaterialClassification.startsWith(\"9\") && \"Yes\".equals(sMaterialRecy) && \"Yes\".equals(sMaterialReco))
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMFluid=fMatMTotal;
+						
+
+						hmMaterials.put(\"mTotal\",fMatMTotal);
+						hmMaterials.put(\"mP\",fMatMP);
+						hmMaterials.put(\"mD\",fMatMD);
+						hmMaterials.put(\"mM\",fMatMM );
+						hmMaterials.put(\"mTr\",fMatMTr);
+						hmMaterials.put(\"mTe\",fMatMTe);
+						hmMaterials.put(\"mNo\",fMatMNo);
+						hmMaterials.put(\"mNonreused\",fMatMNonReused);
+hmMaterials.put(\"mFluid\",fMatMFluid);
+						hmMaterialsMass.put(sMaterialId, hmMaterials);
+						out.write(sMaterialName + \",\"+ fMatMTotal+ \",\"+ fMatMP+\",\"+ fMatMD+\",\"+ fMatMM
+							+\",\"+ fMatMTr+\",\"+ fMatMTe + System.getProperty(\"line.separator\"));
+					}
+
+					java.util.Set hsKeys = hmMaterialsMass.keySet();
+					Iterator hsMatItr = hsKeys.iterator();
+					Float fMEPMTotal = new Float(0.0f);
+					Float fMEPMP = new Float(0.0f);
+					Float fMEPMD = new Float(0.0f);
+					Float fMEPMM = new Float(0.0f);
+					Float fMEPMTr = new Float(0.0f);
+					Float fMEPMTe = new Float(0.0f);
+					Float fMEPMNo = new Float(0.0f);
+Float fMEPMFluid = new Float(0.0f);
+					Float fMEPMNonReused = new Float(0.0f);
+					while (hsMatItr.hasNext())
+					{
+						HashMap hmMat = (HashMap) hmMaterialsMass.get((String) hsMatItr.next());
+						Float fTotal = (Float) hmMat.get(\"mTotal\");
+						Float fMM = (Float) hmMat.get(\"mM\");
+						Float fMTr = (Float) hmMat.get(\"mTr\");
+						Float fMTe = (Float) hmMat.get(\"mTe\");
+						Float fMNo = (Float) hmMat.get(\"mNo\");
+Float fMFluid = (Float) hmMat.get(\"mFluid\");
+						Float fMNonReused = (Float) hmMat.get(\"mNonreused\");
+						fMEPMTotal = fMEPMTotal + fTotal;
+						fMEPMM = fMEPMM + fMM;
+						fMEPMTr = fMEPMTr + fMTr;
+						fMEPMTe = fMEPMTe + fMTe;
+						fMEPMNo = fMEPMNo + fMNo;
+						fMEPMNonReused = fMEPMNonReused + fMNonReused;
+fMEPMFluid = fMEPMFluid + fMFluid;
+					}
+					HashMap hmMEP = new HashMap();
+					hmMEP.put(\"mTotal\",fMEPMTotal);
+					hmMEP.put(\"mP\",fMEPMP );
+					hmMEP.put(\"mD\",fMEPMD);
+					hmMEP.put(\"mM\",fMEPMM );
+					hmMEP.put(\"mTr\",fMEPMTr);
+					hmMEP.put(\"mTe\",fMEPMTe);
+					hmMEP.put(\"mNo\",fMEPMNo);
+					hmMEP.put(\"mNonreused\",fMEPMNonReused);
+hmMEP.put(\"mFluid\",fMEPMFluid);
+					hmPartsMass.put(htID, hmMEP);
+					out.write(htName + \",\"+ fMEPMTotal+ \",\"+ fMEPMP+\",\"+ fMEPMD+\",\"+ fMEPMM
+						+\",\"+ fMEPMTr+\",\"+ fMEPMTe + \",\"+fMEPMNo+System.getProperty(\"line.separator\"));
+					//System.out.println(\"Processed >> \" + htName + \" and mass vars are >>\" + hmMEP);
+				} // For MEP get all first level materials and calculate all mass variables. Add this MEP to parts list for roll up
+
+				cnt = cnt + 1;
+			}
+
+			// for first level enterprise parts add all mass variables with considering the qty
+			MapList partList = getSingleLevelEBOMStructureWithMEP(context, strObjectId, 
+				\"relationship_EBOM\",
+				\"type_Part\");
+			Iterator partItr = partList.iterator();
+			Float fCarPartMTotal = new Float(0.0f);
+			Float fCarPartMP = new Float(0.0f);
+			Float fCarPartMD = new Float(0.0f);
+			Float fCarPartMM = new Float(0.0f);
+			Float fCarPartMTr = new Float(0.0f);
+			Float fCarPartMTe = new Float(0.0f);
+			Float fCarPartMNo = new Float(0.0f);
+Float fCarPartMFluid = new Float(0.0f);
+			Float fCarPartMNonReused = new Float(0.0f);
+			out.write(\"################### Rolling First Level Parts MV #####################\" + newLine);
+
+			int icnt = 1;
+			while (partItr.hasNext())
+			{
+				Hashtable htImmPart = (Hashtable) partItr.next();
+				String sPartName = (String) htImmPart.get(SELECT_NAME);
+				String sPartId = (String) htImmPart.get(SELECT_ID);
+				String sPartQty = (String) htImmPart.get(\"attribute[Quantity]\");
+				Float fPartQty = new Float(1.0f);
+				if (sPartQty != null && !\"null\".equals(sPartQty) && !\"\".equals(sPartQty) && !\"0.0\".equals(sPartQty))
+				{
+					 fPartQty = Float.valueOf(sPartQty);
+				}
+				System.out.println(\"sPartName >>\" + sPartName + \" Qty >> \" + fPartQty);
+				out.write(icnt + \". sPartName [\" + sPartName + \"] Qty [\" + fPartQty + \"]\" +  newLine);
+
+				HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sPartId);
+				if (hmImmPartMass != null)
+				{
+					Float fTotal = (Float) hmImmPartMass.get(\"mTotal\");
+					Float fMP = (Float) hmImmPartMass.get(\"mP\");
+					Float fMD = (Float) hmImmPartMass.get(\"mD\");
+					Float fMM = (Float) hmImmPartMass.get(\"mM\");
+					Float fMTr = (Float) hmImmPartMass.get(\"mTr\");
+					Float fMTe = (Float) hmImmPartMass.get(\"mTe\");
+					Float fMNo = (Float) hmImmPartMass.get(\"mNo\");
+					Float fMNonReused = (Float) hmImmPartMass.get(\"mNonreused\");
+Float fMFluid = (Float) hmImmPartMass.get(\"mFluid\");
+					fTotal = fTotal * fPartQty;	
+					fCarPartMTotal = fCarPartMTotal + fTotal;
+					fMP = fMP * fPartQty;	
+					fCarPartMP = fCarPartMP + fMP;
+					fMD = fMD * fPartQty;	
+					fCarPartMD = fCarPartMD + fMD;
+					fMM = fMM * fPartQty;	
+					fCarPartMM = fCarPartMM + fMM;
+					fMTr = fMTr * fPartQty;	
+					fCarPartMTr = fCarPartMTr + fMTr;
+					fMTe = fMTe * fPartQty;
+					fCarPartMTe = fCarPartMTe + fMTe;
+					fMNo = fMNo * fPartQty;
+					fCarPartMNo = fCarPartMNo + fMNo;
+					fMNonReused = fMNonReused * fPartQty;
+					fCarPartMNonReused = fCarPartMNonReused + fMNonReused;
+fMFluid = fMFluid * fPartQty;
+fCarPartMFluid = fCarPartMFluid + fMFluid;
+					out.write(\"[\" + fCarPartMTotal + \"]\" +  fCarPartMP + \",\" + fCarPartMD + \",\" + fCarPartMM  + \",\" + fCarPartMTr + \",\" + fCarPartMTe +newLine);
+				}
+
+			}// While partList hasNext()
+
+//			Float fMV = new Float(0.0f);
+//			if (sCalWeight != null && !\"\".equals(sCalWeight) && !\"null\".equals(sCalWeight))
+//			{
+//				fMV = Float.valueOf(sCalWeight);
+//			}
+
+//            Float fMV = fCarPartMP + fCarPartMD + fCarPartMM + fCarPartMTe
+//                    + fCarPartMTr + fCarPartMNo + fCarPartMNonReused;
+	 
+	//add by xu 2010/05/08 
+	 Float fMV=new Float(0.0f);
+	
+	// BigDecimal bdmp = new BigDecimal((double)fCarPartMP);
+	 //BigDecimal bdmd = new BigDecimal((double)fCarPartMD);
+	 
+	// bdmp=bdmp.setScale(scale,roundingMode);
+	// bdmd=bdmd.setScale(scale,roundingMode);
+	 
+	 
+	 
+
+         fCarPartMP    =new BigDecimal((double)fCarPartMP).setScale(scale,roundingMode).floatValue();
+	 fCarPartMD    =new BigDecimal((double)fCarPartMD).setScale(scale,roundingMode).floatValue();
+	 fCarPartMM    =new BigDecimal((double)fCarPartMM).setScale(scale,roundingMode).floatValue();
+	 fCarPartMTe   =new BigDecimal((double)fCarPartMTe).setScale(scale,roundingMode).floatValue();
+	 fCarPartMTr   =new BigDecimal((double)fCarPartMTr).setScale(scale,roundingMode).floatValue();
+	 fCarPartMNo   =new BigDecimal((double)fCarPartMNo).setScale(scale,roundingMode).floatValue();
+fCarPartMFluid   =new BigDecimal((double)fCarPartMNo).setScale(scale,roundingMode).floatValue();
+	 fCarPartMTotal=new BigDecimal((double)fCarPartMTotal).setScale(scale,roundingMode).floatValue();
+
+	  fMV = fCarPartMP + fCarPartMD + fCarPartMM + fCarPartMTe
+                    + fCarPartMTr + fCarPartMNo;//+fCarPartMFluid;
+	 fMV           =new BigDecimal((double)fMV).setScale(scale,roundingMode).floatValue();
+	//fMV= fCarPartMTotal;
+	 //add by xu end 2010/05/08
+	 
+	 
+			System.out.println(\"FINAL MASS VARIABLES ARE\");
+			System.out.println(\"mTotal >>\" + fCarPartMTotal);
+			System.out.println(\"fCarPartMP >>\" + fCarPartMP);
+			System.out.println(\"fCarPartMD >>\" + fCarPartMD);
+			System.out.println(\"fCarPartMM >>\" + fCarPartMM);
+			System.out.println(\"fCarPartMTr >>\" + fCarPartMTr);
+			System.out.println(\"fCarPartMTe >>\" + fCarPartMTe);
+			System.out.println(\"fCarPartMNo >>\" + fCarPartMNo);
+			System.out.println(\"fCarPartMNonreused >>\" + fCarPartMNonReused);
+                        System.out.println(\"fCarPartMV >>\" + fMV);
+			
+			Float fRecy = new Float(0.0f);
+			Float fReco = new Float(0.0f);
+			Float fHundread = new Float(100.0f);
+			if (fMV.floatValue() != 0.0f)
+			{
+				fRecy = ((fCarPartMP + fCarPartMD + fCarPartMM + fCarPartMTr)/fMV) * fHundread;
+				fReco = ((fCarPartMP + fCarPartMD + fCarPartMM + fCarPartMTr + fCarPartMTe)/fMV) * fHundread;
+			}
+      
+			
+  
+
+
+			hmFinalMassVars = new HashMap(8);
+			hmFinalMassVars.put(\"mv\",fMV);
+			hmFinalMassVars.put(\"mp\",fCarPartMP);
+			hmFinalMassVars.put(\"md\",fCarPartMD);
+			hmFinalMassVars.put(\"mm\",fCarPartMM);
+			hmFinalMassVars.put(\"mtr\",fCarPartMTr);
+			hmFinalMassVars.put(\"mte\",fCarPartMTe);
+			hmFinalMassVars.put(\"mno\",fCarPartMNo);
+			hmFinalMassVars.put(\"mnonreused\",fCarPartMNonReused);
+			hmFinalMassVars.put(\"recy\",fRecy);
+			hmFinalMassVars.put(\"reco\",fReco);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} finally {
+			if (out != null)
+			{
+				out.close();
+			}
+		}
+
+		System.out.println(\"generateRecyRecoReport ENDS\");
+		return hmFinalMassVars;
+	}
+
+    public HashMap generateMPolyVariablesReport(Context context, String[] args)
+		throws Exception
+	{
+		System.out.println(\"generateMPolyVariablesReport STARTS\");
+		BufferedWriter out = null;
+		HashMap hmFinalMassVars = null;
+		try {
+			String newLine = System.getProperty(\"line.separator\");
+			// The packed argument send from the JPO invoke method is unpacked
+			// to retrive the HashMap.
+			String sPath = context.createWorkspace();
+			String fileName = Calendar.getInstance().getTimeInMillis()+ \"log\";
+			String sFullFileName = sPath + System.getProperty(\"file.separator\") + fileName + \".txt\";
+			System.out.println(\"sFullFileName >>\" + sFullFileName);
+			out = new BufferedWriter(new FileWriter(sFullFileName));
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			// The object id of the context object is retrieved from the HashMap
+			// using the appropriate key.
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			String sCalWeight = dmCarPart.getInfo(context, \"attribute[\" + sAttrCalWeight + \"]\");
+			// Calls the method which directly accepts the Object ID
+			MapList mapList = getEBOMStructureWithMEP(context, strObjectId, \"relationship_EBOM,relationship_ManufacturerEquivalent\",
+				\"type_Part\");
+			mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"Integer\");
+			//System.out.println(\"Map >>\" + mapList);
+
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			int cnt = 1;
+
+			while (itr.hasNext())
+			{
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htRelName = (String) htPart.get(SELECT_RELATIONSHIP_NAME);
+				String htAttrMassVariable = (String) htPart.get(\"attribute[GWM 22628 Mass Variable]\");
+				out.write(cnt + \". sPartName [\" + htName + \"] rel [\" + htRelName + \"] MV [\" + htAttrMassVariable + \"]\" + newLine);
+
+				//System.out.println(htName + \"<>\" + htType + \"<>\" + htRelName + \"<>\" + htAttrMassVariable);
+				if (htRelName.equals(\"EBOM\"))
+				{
+					// Get connected Parts using EBOM and Manufaturer Equivalent
+					MapList partList = getSingleLevelEBOMStructureWithMEP(context, htID,
+						\"relationship_EBOM,relationship_ManufacturerEquivalent\",
+						\"type_Part\");
+					//System.out.println(\"partList >>\" + partList);
+					Iterator partItr = partList.iterator();
+					Float fPartMTotal = new Float(0.0f);
+                    Float fPartMMTotal = new Float(0.0f);
+					Float fPartMPoly = new Float(0.0f);
+					Float fPartMElas = new Float(0.0f);
+					Float fPartMGlass = new Float(0.0f);
+					Float fPartMFluids = new Float(0.0f);
+					Float fPartMMONM = new Float(0.0f);
+
+					Float fPartMTr = new Float(0.0f);
+					Float fPartMTe = new Float(0.0f);
+					int icnt = 1;
+					while (partItr.hasNext())
+					{
+						Hashtable htImmPart = (Hashtable) partItr.next();
+						String sPartName = (String) htImmPart.get(SELECT_NAME);
+
+						//out.write(newLine);
+						out.write(icnt + \". sPartName [\" + sPartName + \"]\" + newLine);
+
+
+						String sPartId = (String) htImmPart.get(SELECT_ID);
+						String sPartQty = (String) htImmPart.get(\"attribute[Quantity]\");
+						DomainObject dmImmPart = new DomainObject(sPartId);
+						String sImmPartCalculatedWeight = dmImmPart.getInfo(context, \"attribute[Calculated Weight]\");
+						Float fImmCalWeight = Float.valueOf(sImmPartCalculatedWeight);
+						Float fPartQty = new Float(1.0f);
+						if (sPartQty != null && !\"null\".equals(sPartQty) && !\"\".equals(sPartQty) && !\"0.0\".equals(sPartQty))
+						{
+							 fPartQty = Float.valueOf(sPartQty);
+						}
+						System.out.println(\"sPartName >>\" + sPartName + \" Qty >> \" + fPartQty);
+						HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sPartId);
+						if (hmImmPartMass != null)
+						{
+							Float fTotal = (Float) hmImmPartMass.get(\"mTotal\");
+							Float fMMTotal = (Float) hmImmPartMass.get(\"mMTotal\");
+							Float fMPoly = (Float) hmImmPartMass.get(\"mPoly\");
+							Float fMElas = (Float) hmImmPartMass.get(\"mElas\");
+							Float fMGlass = (Float) hmImmPartMass.get(\"mGlass\");
+							Float fMFluids = (Float) hmImmPartMass.get(\"mFluids\");
+							Float fMMONM = (Float) hmImmPartMass.get(\"mMONM\");
+                            //System.out.println(\"Ignoring Mass Variable setting\");
+                            fTotal = fTotal * fPartQty;
+                            fPartMTotal = fPartMTotal + fTotal;
+                            fMMTotal = fMMTotal * fPartQty;
+                            fPartMMTotal = fPartMMTotal + fMMTotal;
+                            fMPoly = fMPoly * fPartQty;
+                            fPartMPoly = fPartMPoly + fMPoly;
+                            fMElas = fMElas * fPartQty;
+                            fPartMElas = fPartMElas + fMElas;
+                            fMGlass = fMGlass * fPartQty;
+                            fPartMGlass = fPartMGlass + fMGlass;
+                            fMFluids = fMFluids * fPartQty;
+                            fPartMFluids = fPartMFluids + fMFluids;
+                            fMMONM = fMMONM * fPartQty;
+                            fPartMMONM = fPartMMONM + fMMONM;
+							System.out.println(\"for <\" + sPartName + \">\" + fPartMTotal+ \",\"+ fPartMPoly+\",\"+ fPartMElas+\",\"+ fPartMMTotal
+                                    +\",\"+ fPartMGlass+\",\"+ fPartMFluids+\",\"+ fPartMMONM);
+						} else {
+							System.out.println(\"hmImmPartMass >> \" + hmImmPartMass);
+						}
+						icnt = icnt + 1;
+					}// While partList hasNext()
+					HashMap hmEnterprisePart = new HashMap();
+					hmEnterprisePart.put(\"mTotal\",fPartMTotal);
+					hmEnterprisePart.put(\"mMTotal\",fPartMMTotal);
+					hmEnterprisePart.put(\"mPoly\",fPartMPoly );
+					hmEnterprisePart.put(\"mElas\",fPartMElas);
+					hmEnterprisePart.put(\"mGlass\",fPartMGlass );
+					hmEnterprisePart.put(\"mFluids\",fPartMFluids);
+					hmEnterprisePart.put(\"mMONM\",fPartMMONM);
+					hmPartsMass.put(htID, hmEnterprisePart);
+					out.write(htName + \",\"+ fPartMTotal+ \",\"+ fPartMPoly+\",\"+ fPartMElas+\",\"+ fPartMMTotal+\",\"+ fPartMGlass+\",\"
+					+ fPartMFluids +\",\"
+					+ fPartMMONM + System.getProperty(\"line.separator\"));
+					//System.out.println(\"Processed >> \" + htName + \" & mass vars are >>\" + hmEnterprisePart);
+
+				} else if (htRelName.equals(\"Manufacturer Equivalent\"))
+				{
+					// Get connected Material
+					MapList materialList = getMEPMaterial(context, htID,
+						\"relationship_ComponentMaterial\",
+						\"type_Material\");
+					Iterator matItr = materialList.iterator();
+					HashMap hmMaterialsMass = new HashMap();
+					while (matItr.hasNext())
+					{
+						Float fMatMTotal = new Float(0.0f);
+						Float fMatMMTotal = new Float(0.0f);
+						Float fMatMPoly = new Float(0.0f);
+						Float fMatMGlass = new Float(0.0f);
+						Float fMatMFluid = new Float(0.0f);
+						Float fMatMMonM = new Float(0.0f);
+						Float fMatMElas = new Float(0.0f);
+						HashMap hmMaterials = new HashMap();
+						Hashtable htMat = (Hashtable) matItr.next();
+						String sMaterialId = (String) htMat.get(SELECT_ID);
+						String sMaterialName = (String) htMat.get(SELECT_NAME);
+						String sTotal = (String) htMat.get(\"attribute[Quantity]\");
+						String sMaterialClassification = (String) htMat.get(\"attribute[GWM Classification]\");
+						//System.out.println(\"sMaterialName >>\" + sMaterialName + \" >> \" + sTotal + \" >> \" + sMaterialClassification);
+						if (sMaterialClassification != null
+							&& (sMaterialClassification.startsWith(\"1\") ||
+								sMaterialClassification.startsWith(\"2\") ||
+							sMaterialClassification.startsWith(\"3\") ||
+							sMaterialClassification.startsWith(\"4\")))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMMTotal = fMatMTotal;
+						} else if (sMaterialClassification.startsWith(\"5\") &&
+										!sMaterialClassification.startsWith(\"5.3\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMPoly = fMatMTotal;
+						} else if (sMaterialClassification.startsWith(\"5.3\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMElas = fMatMTotal;
+						} else if (sMaterialClassification.startsWith(\"7.2\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMGlass = fMatMTotal;
+						} else if (sMaterialClassification.startsWith(\"9\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMFluid = fMatMTotal;
+						} else if (sMaterialClassification.startsWith(\"7.1\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMMonM = fMatMTotal;
+						}
+                        
+						hmMaterials.put(\"mTotal\",fMatMTotal);
+						hmMaterials.put(\"mMTotal\",fMatMMTotal);
+						hmMaterials.put(\"mPoly\",fMatMPoly );
+						hmMaterials.put(\"mElas\",fMatMElas);
+						hmMaterials.put(\"mGlass\",fMatMGlass );
+						hmMaterials.put(\"mFluids\",fMatMFluid);
+						hmMaterials.put(\"mMONM\",fMatMMonM);
+                        
+						hmMaterialsMass.put(sMaterialId, hmMaterials);
+						out.write(sMaterialName + \",\"+ fMatMTotal+ \",\"+ fMatMMTotal+\",\"+ fMatMPoly+\",\"+ fMatMElas
+							+\",\"+ fMatMGlass+\",\"+ fMatMFluid+\",\"+ fMatMMonM + System.getProperty(\"line.separator\"));
+					}
+
+					java.util.Set hsKeys = hmMaterialsMass.keySet();
+					Iterator hsMatItr = hsKeys.iterator();
+					Float fMEPMTotal = new Float(0.0f);
+					Float fMEPMMTotal = new Float(0.0f);
+					Float fMEPMPoly = new Float(0.0f);
+					Float fMEPMElas = new Float(0.0f);
+					Float fMEPMGlass = new Float(0.0f);
+					Float fMEPMFluids = new Float(0.0f);
+					Float fMEPMMONM = new Float(0.0f);
+
+					while (hsMatItr.hasNext())
+					{
+						HashMap hmMat = (HashMap) hmMaterialsMass.get((String) hsMatItr.next());
+						Float fTotal = (Float) hmMat.get(\"mTotal\");
+						Float fMMTotal = (Float) hmMat.get(\"mMTotal\");
+						Float fMPoly = (Float) hmMat.get(\"mPoly\");
+						Float fMElas = (Float) hmMat.get(\"mElas\");
+						Float fMGlass = (Float) hmMat.get(\"mGlass\");
+						Float fMFluids = (Float) hmMat.get(\"mFluids\");
+						Float fMMONM = (Float) hmMat.get(\"mMONM\");
+						fMEPMTotal = fMEPMTotal + fTotal;
+						fMEPMMTotal = fMEPMMTotal + fMMTotal;
+						fMEPMPoly = fMEPMPoly + fMPoly;
+						fMEPMElas = fMEPMElas + fMElas;
+						fMEPMGlass = fMEPMGlass + fMGlass;
+						fMEPMFluids = fMEPMFluids + fMFluids;
+						fMEPMMONM = fMEPMMONM + fMMONM;
+					}
+					HashMap hmMEP = new HashMap();
+					hmMEP.put(\"mTotal\",fMEPMTotal);
+					hmMEP.put(\"mMTotal\",fMEPMMTotal );
+					hmMEP.put(\"mPoly\",fMEPMPoly);
+					hmMEP.put(\"mElas\",fMEPMElas);
+					hmMEP.put(\"mGlass\",fMEPMGlass );
+					hmMEP.put(\"mFluids\",fMEPMFluids);
+					hmMEP.put(\"mMONM\",fMEPMMONM);
+					hmPartsMass.put(htID, hmMEP);
+					out.write(htName + \",\"+ fMEPMTotal+ \",\"+ fMEPMMTotal+\",\"+ fMEPMPoly+\",\"+ fMEPMElas
+						+\",\"+ fMEPMGlass+\",\"+ fMEPMFluids+\",\"+ fMEPMMONM + System.getProperty(\"line.separator\"));
+					//System.out.println(\"Processed >> \" + htName + \" and mass vars are >>\" + hmMEP);
+				} // For MEP get all first level materials and calculate all mass variables. Add this MEP to parts list for roll up
+
+				cnt = cnt + 1;
+			}
+
+			// for first level enterprise parts add all mass variables with considering the qty
+			MapList partList = getSingleLevelEBOMStructureWithMEP(context, strObjectId,
+				\"relationship_EBOM\",
+				\"type_Part\");
+			Iterator partItr = partList.iterator();
+			Float fCarPartMTotal = new Float(0.0f);
+			Float fCarPartMMTotal = new Float(0.0f);
+			Float fCarPartMPoly = new Float(0.0f);
+			Float fCarPartMElas = new Float(0.0f);
+			Float fCarPartMGlass = new Float(0.0f);
+			Float fCarPartMFluids = new Float(0.0f);
+			Float fCarPartMMONM = new Float(0.0f);
+			out.write(\"################### Rolling First Level Parts MV #####################\" + newLine);
+
+			int icnt = 1;
+			while (partItr.hasNext())
+			{
+				Hashtable htImmPart = (Hashtable) partItr.next();
+				String sPartName = (String) htImmPart.get(SELECT_NAME);
+				String sPartId = (String) htImmPart.get(SELECT_ID);
+				String sPartQty = (String) htImmPart.get(\"attribute[Quantity]\");
+				Float fPartQty = new Float(1.0f);
+				if (sPartQty != null && !\"null\".equals(sPartQty) && !\"\".equals(sPartQty) && !\"0.0\".equals(sPartQty))
+				{
+					 fPartQty = Float.valueOf(sPartQty);
+				}
+				System.out.println(\"sPartName >>\" + sPartName + \" Qty >> \" + fPartQty);
+				out.write(icnt + \". sPartName [\" + sPartName + \"] Qty [\" + fPartQty + \"]\" +  newLine);
+
+				HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sPartId);
+				if (hmImmPartMass != null)
+				{
+					Float fTotal = (Float) hmImmPartMass.get(\"mTotal\");
+					Float fMTotal = (Float) hmImmPartMass.get(\"mMTotal\");
+					Float fMPoly = (Float) hmImmPartMass.get(\"mPoly\");
+					Float fMElas = (Float) hmImmPartMass.get(\"mElas\");
+					Float fMGlass = (Float) hmImmPartMass.get(\"mGlass\");
+					Float fMFluids = (Float) hmImmPartMass.get(\"mFluids\");
+					Float fMMONM = (Float) hmImmPartMass.get(\"mMONM\");
+					fTotal = fTotal * fPartQty;
+					fCarPartMTotal = fCarPartMTotal + fTotal;
+					fMTotal = fMTotal * fPartQty;
+					fCarPartMMTotal = fCarPartMMTotal + fMTotal;
+					fMPoly = fMPoly * fPartQty;
+					fCarPartMPoly = fCarPartMPoly + fMPoly;
+					fMElas = fMElas * fPartQty;
+					fCarPartMElas = fCarPartMElas + fMElas;
+					fMGlass = fMGlass * fPartQty;
+					fCarPartMGlass = fCarPartMGlass + fMGlass;
+					fMFluids = fMFluids * fPartQty;
+					fCarPartMFluids = fCarPartMFluids + fMFluids;
+					fMMONM = fMMONM * fPartQty;
+					fCarPartMMONM = fCarPartMMONM + fMMONM;
+					out.write(\"[\" + fCarPartMTotal + \"]\" +  fCarPartMMTotal + \",\" + fCarPartMPoly+ \",\" + fCarPartMElas + \",\" + fCarPartMGlass
+                            + \",\" + fCarPartMFluids + \",\" + fCarPartMMONM +newLine);
+				}
+
+			}// While partList hasNext()
+
+			Float fMV = new Float(0.0f);
+			if (sCalWeight != null && !\"\".equals(sCalWeight) && !\"null\".equals(sCalWeight))
+			{
+				fMV = Float.valueOf(sCalWeight);
+			}
+			System.out.println(\"FINAL MASS VARIABLES ARE\");
+			System.out.println(\"mTotal >>\" + fCarPartMTotal);
+			System.out.println(\"mMTotal >>\" + fCarPartMMTotal);
+			System.out.println(\"fCarPartMPoly >>\" + fCarPartMPoly);
+			System.out.println(\"fCarPartMElas >>\" + fCarPartMElas);
+			System.out.println(\"fCarPartMGlass >>\" + fCarPartMGlass);
+			System.out.println(\"fCarPartMFluids >>\" + fCarPartMFluids);
+			System.out.println(\"fCarPartMMONM >>\" + fCarPartMMONM);
+
+			hmFinalMassVars = new HashMap(8);
+			hmFinalMassVars.put(\"mTotal\",fCarPartMTotal);
+
+			hmFinalMassVars.put(\"mmtotal\",fCarPartMMTotal);
+			hmFinalMassVars.put(\"mpoly\",fCarPartMPoly);
+			hmFinalMassVars.put(\"melas\",fCarPartMElas);
+			hmFinalMassVars.put(\"mglass\",fCarPartMGlass);
+			hmFinalMassVars.put(\"mfluids\",fCarPartMFluids);
+			hmFinalMassVars.put(\"mmonm\",fCarPartMMONM);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} finally {
+			if (out != null)
+			{
+				out.close();
+			}
+		}
+
+		System.out.println(\"generateMPolyVariablesReport ENDS\");
+		return hmFinalMassVars;
+	}
+
+    public HashMap generateMClassReport(Context context, String[] args)
+		throws Exception
+	{
+		System.out.println(\"generateMClassReport STARTS\");
+		BufferedWriter out = null;
+		HashMap hmFinalMassVars = null;
+		try {
+			String newLine = System.getProperty(\"line.separator\");
+			// The packed argument send from the JPO invoke method is unpacked
+			// to retrive the HashMap.
+			String sPath = context.createWorkspace();
+			String fileName = Calendar.getInstance().getTimeInMillis()+ \"log\";
+			String sFullFileName = sPath + System.getProperty(\"file.separator\") + fileName + \".txt\";
+			System.out.println(\"sFullFileName >>\" + sFullFileName);
+			out = new BufferedWriter(new FileWriter(sFullFileName));
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			// The object id of the context object is retrieved from the HashMap
+			// using the appropriate key.
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			String sCalWeight = dmCarPart.getInfo(context, \"attribute[\" + sAttrCalWeight + \"]\");
+			// Calls the method which directly accepts the Object ID
+			MapList mapList = getEBOMStructureWithMEP(context, strObjectId, \"relationship_EBOM,relationship_ManufacturerEquivalent\",
+				\"type_Part\");
+			mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"Integer\");
+			//System.out.println(\"Map >>\" + mapList);
+
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			int cnt = 1;
+
+			while (itr.hasNext())
+			{
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htRelName = (String) htPart.get(SELECT_RELATIONSHIP_NAME);
+				String htAttrMassVariable = (String) htPart.get(\"attribute[GWM 22628 Mass Variable]\");
+				out.write(cnt + \". sPartName [\" + htName + \"] rel [\" + htRelName + \"] MV [\" + htAttrMassVariable + \"]\" + newLine);
+
+				//System.out.println(htName + \"<>\" + htType + \"<>\" + htRelName + \"<>\" + htAttrMassVariable);
+				if (htRelName.equals(\"EBOM\"))
+				{
+					// Get connected Parts using EBOM and Manufaturer Equivalent
+					MapList partList = getSingleLevelEBOMStructureWithMEP(context, htID,
+						\"relationship_EBOM,relationship_ManufacturerEquivalent\",
+						\"type_Part\");
+					//System.out.println(\"partList >>\" + partList);
+					Iterator partItr = partList.iterator();
+					Float fPartMTotal = new Float(0.0f);
+					Float fPartMClass0 = new Float(0.0f);
+					Float fPartMClass1 = new Float(0.0f);
+					Float fPartMClass2 = new Float(0.0f);
+					Float fPartMClass3 = new Float(0.0f);
+					Float fPartMClass4 = new Float(0.0f);
+					Float fPartMClass5 = new Float(0.0f);
+					Float fPartMClass6 = new Float(0.0f);
+					Float fPartMClass7 = new Float(0.0f);
+					Float fPartMClass8 = new Float(0.0f);
+					Float fPartMClass9 = new Float(0.0f);
+
+					int icnt = 1;
+					while (partItr.hasNext())
+					{
+						Hashtable htImmPart = (Hashtable) partItr.next();
+						String sPartName = (String) htImmPart.get(SELECT_NAME);
+
+						//out.write(newLine);
+						out.write(icnt + \". sPartName [\" + sPartName + \"]\" + newLine);
+
+
+						String sPartId = (String) htImmPart.get(SELECT_ID);
+						String sPartQty = (String) htImmPart.get(\"attribute[Quantity]\");
+						DomainObject dmImmPart = new DomainObject(sPartId);
+						String sImmPartCalculatedWeight = dmImmPart.getInfo(context, \"attribute[Calculated Weight]\");
+						Float fImmCalWeight = Float.valueOf(sImmPartCalculatedWeight);
+						Float fPartQty = new Float(1.0f);
+						if (sPartQty != null && !\"null\".equals(sPartQty) && !\"\".equals(sPartQty) && !\"0.0\".equals(sPartQty))
+						{
+							 fPartQty = Float.valueOf(sPartQty);
+						}
+						System.out.println(\"sPartName >>\" + sPartName + \" Qty >> \" + fPartQty);
+						HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sPartId);
+						if (hmImmPartMass != null)
+						{
+							Float fTotal = (Float) hmImmPartMass.get(\"mTotal\");
+							Float fClass0 = (Float) hmImmPartMass.get(\"mClass0\");
+							Float fClass1 = (Float) hmImmPartMass.get(\"mClass1\");
+							Float fClass2 = (Float) hmImmPartMass.get(\"mClass2\");
+							Float fClass3 = (Float) hmImmPartMass.get(\"mClass3\");
+							Float fClass4 = (Float) hmImmPartMass.get(\"mClass4\");
+							Float fClass5 = (Float) hmImmPartMass.get(\"mClass5\");
+							Float fClass6 = (Float) hmImmPartMass.get(\"mClass6\");
+							Float fClass7 = (Float) hmImmPartMass.get(\"mClass7\");
+							Float fClass8 = (Float) hmImmPartMass.get(\"mClass8\");
+							Float fClass9 = (Float) hmImmPartMass.get(\"mClass9\");
+                            //System.out.println(\"Ignoring Mass Variable setting\");
+                            fTotal = fTotal * fPartQty;
+                            fPartMTotal = fPartMTotal + fTotal;
+                            fClass0 = fClass0 * fPartQty;
+                            fPartMClass0 = fPartMClass0 + fClass0;
+                            fClass1 = fClass1 * fPartQty;
+                            fPartMClass1 = fPartMClass1 + fClass1;
+                            fClass2 = fClass2 * fPartQty;
+                            fPartMClass2 = fPartMClass2 + fClass2;
+                            fClass3 = fClass3 * fPartQty; 
+                            fPartMClass3 = fPartMClass3 + fClass3;
+                            fClass4 = fClass4 * fPartQty;
+                            fPartMClass4 = fPartMClass4 + fClass4;
+                            fClass5 = fClass5 * fPartQty;
+                            fPartMClass5 = fPartMClass5 + fClass5;
+                            fClass6 = fClass6 * fPartQty;
+                            fPartMClass6 = fPartMClass6 + fClass6;
+                            fClass7 = fClass7 * fPartQty;
+                            fPartMClass7 = fPartMClass7 + fClass7;
+                            fClass8 = fClass8 * fPartQty;
+                            fPartMClass8 = fPartMClass8 + fClass8;
+                            fClass9 = fClass9 * fPartQty;
+                            fPartMClass9 = fPartMClass9 + fClass9;
+
+//							System.out.println(\"for <\" + sPartName + \">\" + fPartMTotal+ \",\"+ fPartMPoly+\",\"+ fPartMElas+\",\"+ fPartMMTotal
+//                                    +\",\"+ fPartMGlass+\",\"+ fPartMFluids+\",\"+ fPartMMONM);
+						} else {
+							System.out.println(\"hmImmPartMass >> \" + hmImmPartMass);
+						}
+						icnt = icnt + 1;
+					}// While partList hasNext()
+					HashMap hmEnterprisePart = new HashMap();
+					hmEnterprisePart.put(\"mTotal\",fPartMTotal);
+					hmEnterprisePart.put(\"mClass0\",fPartMClass0);
+					hmEnterprisePart.put(\"mClass1\",fPartMClass1);
+					hmEnterprisePart.put(\"mClass2\",fPartMClass2);
+					hmEnterprisePart.put(\"mClass3\",fPartMClass3);
+					hmEnterprisePart.put(\"mClass4\",fPartMClass4);
+					hmEnterprisePart.put(\"mClass5\",fPartMClass5);
+					hmEnterprisePart.put(\"mClass6\",fPartMClass6);
+					hmEnterprisePart.put(\"mClass7\",fPartMClass7);
+					hmEnterprisePart.put(\"mClass8\",fPartMClass8);
+					hmEnterprisePart.put(\"mClass9\",fPartMClass9);
+					hmPartsMass.put(htID, hmEnterprisePart);
+//					out.write(htName + \",\"+ fPartMTotal+ \",\"+ fPartMPoly+\",\"+ fPartMElas+\",\"+ fPartMMTotal+\",\"+ fPartMGlass+\",\"
+//					+ fPartMFluids +\",\"
+//					+ fPartMMONM + System.getProperty(\"line.separator\"));
+					//System.out.println(\"Processed >> \" + htName + \" & mass vars are >>\" + hmEnterprisePart);
+
+				} else if (htRelName.equals(\"Manufacturer Equivalent\"))
+				{
+					// Get connected Material
+					MapList materialList = getMEPMaterial(context, htID,
+						\"relationship_ComponentMaterial\",
+						\"type_Material\");
+					Iterator matItr = materialList.iterator();
+					HashMap hmMaterialsMass = new HashMap();
+					while (matItr.hasNext())
+					{
+						Float fMatMTotal = new Float(0.0f);
+						Float fMatMClass0 = new Float(0.0f);
+						Float fMatMClass1 = new Float(0.0f);
+						Float fMatMClass2 = new Float(0.0f);
+						Float fMatMClass3 = new Float(0.0f);
+						Float fMatMClass4 = new Float(0.0f);
+						Float fMatMClass5 = new Float(0.0f);
+						Float fMatMClass6 = new Float(0.0f);
+						Float fMatMClass7 = new Float(0.0f);
+						Float fMatMClass8 = new Float(0.0f);
+						Float fMatMClass9 = new Float(0.0f);
+						HashMap hmMaterials = new HashMap();
+						Hashtable htMat = (Hashtable) matItr.next();
+						String sMaterialId = (String) htMat.get(SELECT_ID);
+						String sMaterialName = (String) htMat.get(SELECT_NAME);
+						String sTotal = (String) htMat.get(\"attribute[Quantity]\");
+						String sMaterialClassification = (String) htMat.get(\"attribute[GWM Classification]\");
+						//System.out.println(\"sMaterialName >>\" + sMaterialName + \" >> \" + sTotal + \" >> \" + sMaterialClassification);
+						if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"0\")) {
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMClass0 = fMatMTotal;
+                        } else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"1\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMClass1 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"2\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMClass2 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"3\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMClass3 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"4\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMClass4 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"5\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMClass5 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"6\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMClass6 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"7\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMClass7 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"8\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMClass8 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"9\"))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatMClass9 = fMatMTotal;
+						}
+
+						hmMaterials.put(\"mTotal\",fMatMTotal);
+						hmMaterials.put(\"mClass0\",fMatMClass0);
+						hmMaterials.put(\"mClass1\",fMatMClass1);
+						hmMaterials.put(\"mClass2\",fMatMClass2);
+						hmMaterials.put(\"mClass3\",fMatMClass3);
+						hmMaterials.put(\"mClass4\",fMatMClass4);
+						hmMaterials.put(\"mClass5\",fMatMClass5);
+						hmMaterials.put(\"mClass6\",fMatMClass6);
+						hmMaterials.put(\"mClass7\",fMatMClass7);
+						hmMaterials.put(\"mClass8\",fMatMClass8);
+						hmMaterials.put(\"mClass9\",fMatMClass9);
+
+						hmMaterialsMass.put(sMaterialId, hmMaterials);
+//						out.write(sMaterialName + \",\"+ fMatMTotal+ \",\"+ fMatMMTotal+\",\"+ fMatMPoly+\",\"+ fMatMElas
+//							+\",\"+ fMatMGlass+\",\"+ fMatMFluid+\",\"+ fMatMMonM + System.getProperty(\"line.separator\"));
+					}
+
+					java.util.Set hsKeys = hmMaterialsMass.keySet();
+					Iterator hsMatItr = hsKeys.iterator();
+					Float fMEPMTotal = new Float(0.0f);
+					Float fMEPMClass0 = new Float(0.0f);
+					Float fMEPMClass1 = new Float(0.0f);
+					Float fMEPMClass2 = new Float(0.0f);
+					Float fMEPMClass3 = new Float(0.0f);
+					Float fMEPMClass4 = new Float(0.0f);
+					Float fMEPMClass5 = new Float(0.0f);
+					Float fMEPMClass6 = new Float(0.0f);
+					Float fMEPMClass7 = new Float(0.0f);
+					Float fMEPMClass8 = new Float(0.0f);
+					Float fMEPMClass9 = new Float(0.0f);
+
+					while (hsMatItr.hasNext())
+					{
+						HashMap hmMat = (HashMap) hmMaterialsMass.get((String) hsMatItr.next());
+						Float fTotal = (Float) hmMat.get(\"mTotal\");
+						Float fClass0 = (Float) hmMat.get(\"mClass0\");
+						Float fClass1 = (Float) hmMat.get(\"mClass1\");
+						Float fClass2 = (Float) hmMat.get(\"mClass2\");
+						Float fClass3 = (Float) hmMat.get(\"mClass3\");
+						Float fClass4 = (Float) hmMat.get(\"mClass4\");
+						Float fClass5 = (Float) hmMat.get(\"mClass5\");
+						Float fClass6 = (Float) hmMat.get(\"mClass6\");
+						Float fClass7 = (Float) hmMat.get(\"mClass7\");
+						Float fClass8 = (Float) hmMat.get(\"mClass8\");
+						Float fClass9 = (Float) hmMat.get(\"mClass9\");
+
+                        fMEPMTotal = fMEPMTotal + fTotal;
+						fMEPMClass0 = fMEPMClass0 + fClass0;
+						fMEPMClass1 = fMEPMClass1 + fClass1;
+						fMEPMClass2 = fMEPMClass2 + fClass2;
+						fMEPMClass3 = fMEPMClass3 + fClass3;
+						fMEPMClass4 = fMEPMClass4 + fClass4;
+						fMEPMClass5 = fMEPMClass5 + fClass5;
+						fMEPMClass6 = fMEPMClass6 + fClass6;
+						fMEPMClass7 = fMEPMClass7 + fClass7;
+						fMEPMClass8 = fMEPMClass8 + fClass8;
+						fMEPMClass9 = fMEPMClass9 + fClass9;
+					}
+					HashMap hmMEP = new HashMap();
+					hmMEP.put(\"mTotal\",fMEPMTotal);
+					hmMEP.put(\"mClass0\",fMEPMClass0);
+					hmMEP.put(\"mClass1\",fMEPMClass1);
+					hmMEP.put(\"mClass2\",fMEPMClass2);
+					hmMEP.put(\"mClass3\",fMEPMClass3);
+					hmMEP.put(\"mClass4\",fMEPMClass4);
+					hmMEP.put(\"mClass5\",fMEPMClass5);
+					hmMEP.put(\"mClass6\",fMEPMClass6);
+					hmMEP.put(\"mClass7\",fMEPMClass7);
+					hmMEP.put(\"mClass8\",fMEPMClass8);
+					hmMEP.put(\"mClass9\",fMEPMClass9);
+
+					hmPartsMass.put(htID, hmMEP);
+//					out.write(htName + \",\"+ fMEPMTotal+ \",\"+ fMEPMMTotal+\",\"+ fMEPMPoly+\",\"+ fMEPMElas
+//						+\",\"+ fMEPMGlass+\",\"+ fMEPMFluids+\",\"+ fMEPMMONM + System.getProperty(\"line.separator\"));
+					//System.out.println(\"Processed >> \" + htName + \" and mass vars are >>\" + hmMEP);
+				} // For MEP get all first level materials and calculate all mass variables. Add this MEP to parts list for roll up
+
+				cnt = cnt + 1;
+			}
+
+			// for first level enterprise parts add all mass variables with considering the qty
+			MapList partList = getSingleLevelEBOMStructureWithMEP(context, strObjectId,
+				\"relationship_EBOM\",
+				\"type_Part\");
+			Iterator partItr = partList.iterator();
+			Float fCarPartMTotal = new Float(0.0f);
+			Float fCarPartMClass0 = new Float(0.0f);
+			Float fCarPartMClass1 = new Float(0.0f);
+			Float fCarPartMClass2 = new Float(0.0f);
+			Float fCarPartMClass3 = new Float(0.0f);
+			Float fCarPartMClass4 = new Float(0.0f);
+			Float fCarPartMClass5 = new Float(0.0f);
+			Float fCarPartMClass6 = new Float(0.0f);
+			Float fCarPartMClass7 = new Float(0.0f);
+			Float fCarPartMClass8 = new Float(0.0f);
+			Float fCarPartMClass9 = new Float(0.0f);
+			out.write(\"################### Rolling First Level Parts MV #####################\" + newLine);
+
+			int icnt = 1;
+			while (partItr.hasNext())
+			{
+				Hashtable htImmPart = (Hashtable) partItr.next();
+				String sPartName = (String) htImmPart.get(SELECT_NAME);
+				String sPartId = (String) htImmPart.get(SELECT_ID);
+				String sPartQty = (String) htImmPart.get(\"attribute[Quantity]\");
+				Float fPartQty = new Float(1.0f);
+				if (sPartQty != null && !\"null\".equals(sPartQty) && !\"\".equals(sPartQty) && !\"0.0\".equals(sPartQty))
+				{
+					 fPartQty = Float.valueOf(sPartQty);
+				}
+				System.out.println(\"sPartName >>\" + sPartName + \" Qty >> \" + fPartQty);
+				out.write(icnt + \". sPartName [\" + sPartName + \"] Qty [\" + fPartQty + \"]\" +  newLine);
+
+				HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sPartId);
+				if (hmImmPartMass != null)
+				{
+					Float fTotal = (Float) hmImmPartMass.get(\"mTotal\");
+					Float fClass0 = (Float) hmImmPartMass.get(\"mClass0\");
+					Float fClass1 = (Float) hmImmPartMass.get(\"mClass1\");
+					Float fClass2 = (Float) hmImmPartMass.get(\"mClass2\");
+					Float fClass3 = (Float) hmImmPartMass.get(\"mClass3\");
+					Float fClass4 = (Float) hmImmPartMass.get(\"mClass4\");
+					Float fClass5 = (Float) hmImmPartMass.get(\"mClass5\");
+					Float fClass6 = (Float) hmImmPartMass.get(\"mClass6\");
+					Float fClass7 = (Float) hmImmPartMass.get(\"mClass7\");
+					Float fClass8 = (Float) hmImmPartMass.get(\"mClass8\");
+					Float fClass9 = (Float) hmImmPartMass.get(\"mClass9\");
+
+                    fTotal = fTotal * fPartQty;
+					fCarPartMTotal = fCarPartMTotal + fTotal;
+                    fClass0 = fClass0 * fPartQty;
+					fCarPartMClass0 = fCarPartMClass0 + fClass0;
+                    fClass1 = fClass1 * fPartQty;
+					fCarPartMClass1 = fCarPartMClass1 + fClass1;
+                    fClass2 = fClass2 * fPartQty;
+					fCarPartMClass2 = fCarPartMClass2 + fClass2;
+                    fClass3 = fClass3 * fPartQty;
+					fCarPartMClass3 = fCarPartMClass3 + fClass3;
+                    fClass4 = fClass4 * fPartQty;
+					fCarPartMClass4 = fCarPartMClass4 + fClass4;
+                    fClass5 = fClass5 * fPartQty;
+					fCarPartMClass5 = fCarPartMClass5 + fClass5;
+                    fClass6 = fClass6 * fPartQty;
+					fCarPartMClass6 = fCarPartMClass6 + fClass6;
+                    fClass7 = fClass7 * fPartQty;
+					fCarPartMClass7 = fCarPartMClass7 + fClass7;
+                    fClass8 = fClass8 * fPartQty;
+					fCarPartMClass8 = fCarPartMClass8 + fClass8;
+                    fClass9 = fClass9 * fPartQty;
+					fCarPartMClass9 = fCarPartMClass9 + fClass9;
+
+//                    out.write(\"[\" + fCarPartMTotal + \"]\" +  fCarPartMMTotal + \",\" + fCarPartMPoly+ \",\" + fCarPartMElas + \",\" + fCarPartMGlass
+//                            + \",\" + fCarPartMFluids + \",\" + fCarPartMMONM +newLine);
+				}
+
+			}// While partList hasNext()
+
+			Float fMV = new Float(0.0f);
+			if (sCalWeight != null && !\"\".equals(sCalWeight) && !\"null\".equals(sCalWeight))
+			{
+				fMV = Float.valueOf(sCalWeight);
+			}
+			System.out.println(\"FINAL MASS VARIABLES ARE\");
+			System.out.println(\"mTotal >>\" + fCarPartMTotal);
+			System.out.println(\"mClass0 >>\" + fCarPartMClass0);
+			System.out.println(\"mClass1 >>\" + fCarPartMClass1);
+			System.out.println(\"mClass2 >>\" + fCarPartMClass2);
+			System.out.println(\"mClass3 >>\" + fCarPartMClass3);
+			System.out.println(\"mClass4 >>\" + fCarPartMClass4);
+			System.out.println(\"mClass5 >>\" + fCarPartMClass5);
+			System.out.println(\"mClass6 >>\" + fCarPartMClass6);
+			System.out.println(\"mClass7 >>\" + fCarPartMClass7);
+			System.out.println(\"mClass8 >>\" + fCarPartMClass8);
+			System.out.println(\"mClass9 >>\" + fCarPartMClass9);
+
+			hmFinalMassVars = new HashMap(8);
+			hmFinalMassVars.put(\"mtotal\",fCarPartMTotal);
+			hmFinalMassVars.put(\"mclass0\",fCarPartMClass0);
+			hmFinalMassVars.put(\"mclass1\",fCarPartMClass1);
+			hmFinalMassVars.put(\"mclass2\",fCarPartMClass2);
+			hmFinalMassVars.put(\"mclass3\",fCarPartMClass3);
+			hmFinalMassVars.put(\"mclass4\",fCarPartMClass4);
+			hmFinalMassVars.put(\"mclass5\",fCarPartMClass5);
+			hmFinalMassVars.put(\"mclass6\",fCarPartMClass6);
+			hmFinalMassVars.put(\"mclass7\",fCarPartMClass7);
+			hmFinalMassVars.put(\"mclass8\",fCarPartMClass8);
+			hmFinalMassVars.put(\"mclass9\",fCarPartMClass9);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} finally {
+			if (out != null)
+			{
+				out.close();
+			}
+		}
+
+		System.out.println(\"generateMClassReport ENDS\");
+		return hmFinalMassVars;
+	}
+
+    public HashMap generateMTrDetailsReport(Context context, String[] args)
+		throws Exception
+	{
+		System.out.println(\"generateMTrDetailsReport STARTS\");
+		BufferedWriter out = null;
+		HashMap hmFinalMassVars = null;
+		try {
+			String newLine = System.getProperty(\"line.separator\");
+			// The packed argument send from the JPO invoke method is unpacked
+			// to retrive the HashMap.
+			String sPath = context.createWorkspace();
+			String fileName = Calendar.getInstance().getTimeInMillis()+ \"log\";
+			String sFullFileName = sPath + System.getProperty(\"file.separator\") + fileName + \".txt\";
+			System.out.println(\"sFullFileName >>\" + sFullFileName);
+			out = new BufferedWriter(new FileWriter(sFullFileName));
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			// The object id of the context object is retrieved from the HashMap
+			// using the appropriate key.
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			String sCalWeight = dmCarPart.getInfo(context, \"attribute[\" + sAttrCalWeight + \"]\");
+			// Calls the method which directly accepts the Object ID
+			MapList mapList = getEBOMStructureWithMEP(context, strObjectId, \"relationship_EBOM,relationship_ManufacturerEquivalent\",
+				\"type_Part\");
+			mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"Integer\");
+			//System.out.println(\"Map >>\" + mapList);
+
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			int cnt = 1;
+
+			while (itr.hasNext())
+			{
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htRelName = (String) htPart.get(SELECT_RELATIONSHIP_NAME);
+				String htAttrMassVariable = (String) htPart.get(\"attribute[GWM 22628 Mass Variable]\");
+				out.write(cnt + \". sPartName [\" + htName + \"] rel [\" + htRelName + \"] MV [\" + htAttrMassVariable + \"]\" + newLine);
+
+				//System.out.println(htName + \"<>\" + htType + \"<>\" + htRelName + \"<>\" + htAttrMassVariable);
+				if (htRelName.equals(\"EBOM\"))
+				{
+					// Get connected Parts using EBOM and Manufaturer Equivalent
+					MapList partList = getSingleLevelEBOMStructureWithMEP(context, htID,
+						\"relationship_EBOM,relationship_ManufacturerEquivalent\",
+						\"type_Part\");
+					//System.out.println(\"partList >>\" + partList);
+					Iterator partItr = partList.iterator();
+					Float fPartMTotal = new Float(0.0f);
+					Float fPartM51a = new Float(0.0f);
+					Float fPartM51b = new Float(0.0f);
+					Float fPartM52 = new Float(0.0f);
+					Float fPartM53 = new Float(0.0f);
+					Float fPartM541 = new Float(0.0f);
+					Float fPartM542 = new Float(0.0f);
+					Float fPartM543 = new Float(0.0f);
+					Float fPartM551 = new Float(0.0f);
+					Float fPartM552 = new Float(0.0f);
+					Float fPartM72 = new Float(0.0f);
+
+
+					int icnt = 1;
+					while (partItr.hasNext())
+					{
+						Hashtable htImmPart = (Hashtable) partItr.next();
+						String sPartName = (String) htImmPart.get(SELECT_NAME);
+
+						//out.write(newLine);
+						out.write(icnt + \". sPartName [\" + sPartName + \"]\" + newLine);
+
+
+						String sPartId = (String) htImmPart.get(SELECT_ID);
+						String sPartQty = (String) htImmPart.get(\"attribute[Quantity]\");
+						DomainObject dmImmPart = new DomainObject(sPartId);
+						String sImmPartCalculatedWeight = dmImmPart.getInfo(context, \"attribute[Calculated Weight]\");
+						Float fImmCalWeight = Float.valueOf(sImmPartCalculatedWeight);
+						Float fPartQty = new Float(1.0f);
+						if (sPartQty != null && !\"null\".equals(sPartQty) && !\"\".equals(sPartQty) && !\"0.0\".equals(sPartQty))
+						{
+							 fPartQty = Float.valueOf(sPartQty);
+						}
+						System.out.println(\"sPartName >>\" + sPartName + \" Qty >> \" + fPartQty);
+						HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sPartId);
+						if (hmImmPartMass != null)
+						{
+							Float fTotal = (Float) hmImmPartMass.get(\"mTotal\");
+							Float f51a = (Float) hmImmPartMass.get(\"m51a\");
+							Float f51b = (Float) hmImmPartMass.get(\"m51b\");
+							Float f52 = (Float) hmImmPartMass.get(\"m52\");
+							Float f53 = (Float) hmImmPartMass.get(\"m53\");
+							Float f541 = (Float) hmImmPartMass.get(\"m541\");
+							Float f542 = (Float) hmImmPartMass.get(\"m542\");
+							Float f543 = (Float) hmImmPartMass.get(\"m543\");
+							Float f551 = (Float) hmImmPartMass.get(\"m551\");
+							Float f552 = (Float) hmImmPartMass.get(\"m552\");
+							Float f72 = (Float) hmImmPartMass.get(\"m72\");
+							//System.out.println(\"Ignoring Mass Variable setting\");
+                            // Edited to allow mass variable setting to affect the roll up -
+                            // [6/17/2009 10:57:30 AM] Ashish Dasnurkar: if part is mP or mD  or Non-Reusable then
+                            // all mTr details variables will be set to 0
+//                            if (htAttrMassVariable != null && !\"null\".equals(htAttrMassVariable) && !\"\".equals(htAttrMassVariable)
+//								&& (\"mP\".equals(htAttrMassVariable) || \"mD\".equals(htAttrMassVariable) || \"Non-Reusable\".equals(htAttrMassVariable)))
+//							{
+                            if (htAttrMassVariable != null && !\"null\".equals(htAttrMassVariable) && !\"\".equals(htAttrMassVariable)
+								&& (\"mP\".equals(htAttrMassVariable) || \"mD\".equals(htAttrMassVariable)))
+							{
+                                // Do nothing for roll up
+                            } else {
+                                // Else roll up
+                                fTotal = fTotal * fPartQty;
+                                fPartMTotal = fPartMTotal + fTotal;
+                                f51a = f51a * fPartQty;
+                                fPartM51a = fPartM51a + f51a;
+                                f51b = f51b * fPartQty;
+                                fPartM51b = fPartM51b + f51b;
+                                f52 = f52 * fPartQty;
+                                fPartM52 = fPartM52 + f52;
+                                f53 = f53 * fPartQty;
+                                fPartM53 = fPartM53 + f53;
+                                f541 = f541 * fPartQty;
+                                fPartM541 = fPartM541 + f541;
+                                f542 = f542 * fPartQty;
+                                fPartM542 = fPartM542 + f542;
+                                f543 = f543 * fPartQty;
+                                fPartM543 = fPartM543 + f543;
+                                f551 = f551 * fPartQty;
+                                fPartM551 = fPartM551 + f551;
+                                f552 = f552 * fPartQty;
+                                fPartM552 = fPartM552 + f552;
+                                f72 = f72 * fPartQty;
+                                fPartM72 = fPartM72 + f72;
+                            }
+
+//							System.out.println(\"for <\" + sPartName + \">\" + fPartMTotal+ \",\"+ fPartMPoly+\",\"+ fPartMElas+\",\"+ fPartMMTotal
+//                                    +\",\"+ fPartMGlass+\",\"+ fPartMFluids+\",\"+ fPartMMONM);
+						} else {
+							System.out.println(\"hmImmPartMass >> \" + hmImmPartMass);
+						}
+						icnt = icnt + 1;
+					}// While partList hasNext()
+					HashMap hmEnterprisePart = new HashMap();
+					hmEnterprisePart.put(\"mTotal\",fPartMTotal);
+					hmEnterprisePart.put(\"m51a\",fPartM51a);
+					hmEnterprisePart.put(\"m51b\",fPartM51b);
+					hmEnterprisePart.put(\"m52\",fPartM52);
+					hmEnterprisePart.put(\"m53\",fPartM53);
+					hmEnterprisePart.put(\"m541\",fPartM541);
+					hmEnterprisePart.put(\"m542\",fPartM542);
+					hmEnterprisePart.put(\"m543\",fPartM543);
+					hmEnterprisePart.put(\"m551\",fPartM551);
+					hmEnterprisePart.put(\"m552\",fPartM552);
+					hmEnterprisePart.put(\"m72\",fPartM72);
+					hmPartsMass.put(htID, hmEnterprisePart);
+//					out.write(htName + \",\"+ fPartMTotal+ \",\"+ fPartMPoly+\",\"+ fPartMElas+\",\"+ fPartMMTotal+\",\"+ fPartMGlass+\",\"
+//					+ fPartMFluids +\",\"
+//					+ fPartMMONM + System.getProperty(\"line.separator\"));
+					//System.out.println(\"Processed >> \" + htName + \" & mass vars are >>\" + hmEnterprisePart);
+
+				} else if (htRelName.equals(\"Manufacturer Equivalent\"))
+				{
+					// Get connected Material
+					MapList materialList = getMEPMaterial(context, htID,
+						\"relationship_ComponentMaterial\",
+						\"type_Material\");
+					Iterator matItr = materialList.iterator();
+					HashMap hmMaterialsMass = new HashMap();
+					while (matItr.hasNext())
+					{
+						Float fMatMTotal = new Float(0.0f);
+						Float fMatM51a = new Float(0.0f);
+						Float fMatM51b = new Float(0.0f);
+						Float fMatM52 = new Float(0.0f);
+						Float fMatM53 = new Float(0.0f);
+						Float fMatM541 = new Float(0.0f);
+						Float fMatM542 = new Float(0.0f);
+						Float fMatM543 = new Float(0.0f);
+						Float fMatM551 = new Float(0.0f);
+						Float fMatM552 = new Float(0.0f);
+						Float fMatM72 = new Float(0.0f);
+						HashMap hmMaterials = new HashMap();
+						Hashtable htMat = (Hashtable) matItr.next();
+						String sMaterialId = (String) htMat.get(SELECT_ID);
+						//String sMaterialName = (String) htMat.get(SELECT_NAME);
+						String sTotal = (String) htMat.get(\"attribute[Quantity]\");
+						String sMaterialClassification = (String) htMat.get(\"attribute[GWM Classification]\");
+						String sMaterialRecy = (String) htMat.get(\"attribute[GWM recyclability]\");
+						//System.out.println(\"sMaterialName >>\" + sMaterialName + \" >> \" + sTotal + \" >> \" + sMaterialClassification);
+						if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"5.1.a\") && \"Yes\".equals(sMaterialRecy)) {
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatM51a = fMatMTotal;
+                        } else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"5.1.b\") && \"Yes\".equals(sMaterialRecy))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatM51b = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"5.2\") && \"Yes\".equals(sMaterialRecy))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatM52 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"5.3\") && \"Yes\".equals(sMaterialRecy))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatM53 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"5.4.1\") && \"Yes\".equals(sMaterialRecy))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatM541 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"5.4.2\") && \"Yes\".equals(sMaterialRecy))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatM542 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"5.4.3\") && \"Yes\".equals(sMaterialRecy))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatM543 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"5.5.1\") && \"Yes\".equals(sMaterialRecy))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatM551 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"5.5.2\") && \"Yes\".equals(sMaterialRecy))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatM552 = fMatMTotal;
+						} else if (sMaterialClassification != null	&& sMaterialClassification.startsWith(\"7.2\") && \"Yes\".equals(sMaterialRecy))
+						{
+							fMatMTotal = Float.valueOf(sTotal);
+							fMatM72 = fMatMTotal;
+						} 
+
+						hmMaterials.put(\"mTotal\",fMatMTotal);
+						hmMaterials.put(\"m51a\",fMatM51a);
+						hmMaterials.put(\"m51b\",fMatM51b);
+						hmMaterials.put(\"m52\",fMatM52);
+						hmMaterials.put(\"m53\",fMatM53);
+						hmMaterials.put(\"m541\",fMatM541);
+						hmMaterials.put(\"m542\",fMatM542);
+						hmMaterials.put(\"m543\",fMatM543);
+						hmMaterials.put(\"m551\",fMatM551);
+						hmMaterials.put(\"m552\",fMatM552);
+						hmMaterials.put(\"m72\",fMatM72);
+
+						hmMaterialsMass.put(sMaterialId, hmMaterials);
+//						out.write(sMaterialName + \",\"+ fMatMTotal+ \",\"+ fMatMMTotal+\",\"+ fMatMPoly+\",\"+ fMatMElas
+//							+\",\"+ fMatMGlass+\",\"+ fMatMFluid+\",\"+ fMatMMonM + System.getProperty(\"line.separator\"));
+					}
+
+					java.util.Set hsKeys = hmMaterialsMass.keySet();
+					Iterator hsMatItr = hsKeys.iterator();
+					Float fMEPMTotal = new Float(0.0f);
+					Float fMEPM51a = new Float(0.0f);
+					Float fMEPM51b = new Float(0.0f);
+					Float fMEPM52 = new Float(0.0f);
+					Float fMEPM53 = new Float(0.0f);
+					Float fMEPM541 = new Float(0.0f);
+					Float fMEPM542 = new Float(0.0f);
+					Float fMEPM543 = new Float(0.0f);
+					Float fMEPM551 = new Float(0.0f);
+					Float fMEPM552 = new Float(0.0f);
+					Float fMEPM72 = new Float(0.0f);
+
+					while (hsMatItr.hasNext())
+					{
+						HashMap hmMat = (HashMap) hmMaterialsMass.get((String) hsMatItr.next());
+						Float fTotal = (Float) hmMat.get(\"mTotal\");
+						Float f51a = (Float) hmMat.get(\"m51a\");
+						Float f51b = (Float) hmMat.get(\"m51b\");
+						Float f52 = (Float) hmMat.get(\"m52\");
+						Float f53 = (Float) hmMat.get(\"m53\");
+						Float f541 = (Float) hmMat.get(\"m541\");
+						Float f542 = (Float) hmMat.get(\"m542\");
+						Float f543 = (Float) hmMat.get(\"m543\");
+						Float f551 = (Float) hmMat.get(\"m551\");
+						Float f552 = (Float) hmMat.get(\"m552\");
+						Float f72 = (Float) hmMat.get(\"m72\");
+
+                        fMEPMTotal = fMEPMTotal + fTotal;
+						fMEPM51a = fMEPM51a + f51a;
+						fMEPM51b = fMEPM51b + f51b;
+						fMEPM52 = fMEPM52 + f52;
+						fMEPM53 = fMEPM53 + f53;
+						fMEPM541 = fMEPM541 + f541;
+						fMEPM542 = fMEPM542 + f542;
+						fMEPM543 = fMEPM543 + f543;
+						fMEPM551 = fMEPM551 + f551;
+						fMEPM552 = fMEPM552 + f552;
+						fMEPM72 = fMEPM72 + f72;
+					}
+					HashMap hmMEP = new HashMap();
+					hmMEP.put(\"mTotal\",fMEPMTotal);
+					hmMEP.put(\"m51a\",fMEPM51a);
+					hmMEP.put(\"m51b\",fMEPM51b);
+					hmMEP.put(\"m52\",fMEPM52);
+					hmMEP.put(\"m53\",fMEPM53);
+					hmMEP.put(\"m541\",fMEPM541);
+					hmMEP.put(\"m542\",fMEPM542);
+					hmMEP.put(\"m543\",fMEPM543);
+					hmMEP.put(\"m551\",fMEPM551);
+					hmMEP.put(\"m552\",fMEPM552);
+					hmMEP.put(\"m72\",fMEPM72);
+
+					hmPartsMass.put(htID, hmMEP);
+//					out.write(htName + \",\"+ fMEPMTotal+ \",\"+ fMEPMMTotal+\",\"+ fMEPMPoly+\",\"+ fMEPMElas
+//						+\",\"+ fMEPMGlass+\",\"+ fMEPMFluids+\",\"+ fMEPMMONM + System.getProperty(\"line.separator\"));
+					//System.out.println(\"Processed >> \" + htName + \" and mass vars are >>\" + hmMEP);
+				} // For MEP get all first level materials and calculate all mass variables. Add this MEP to parts list for roll up
+
+				cnt = cnt + 1;
+			}
+
+			// for first level enterprise parts add all mass variables with considering the qty
+			MapList partList = getSingleLevelEBOMStructureWithMEP(context, strObjectId,
+				\"relationship_EBOM\",
+				\"type_Part\");
+			Iterator partItr = partList.iterator();
+			Float fCarPartMTotal = new Float(0.0f);
+			Float fCarPartM51a = new Float(0.0f);
+			Float fCarPartM51b = new Float(0.0f);
+			Float fCarPartM52 = new Float(0.0f);
+			Float fCarPartM53 = new Float(0.0f);
+			Float fCarPartM541 = new Float(0.0f);
+			Float fCarPartM542 = new Float(0.0f);
+			Float fCarPartM543 = new Float(0.0f);
+			Float fCarPartM551 = new Float(0.0f);
+			Float fCarPartM552 = new Float(0.0f);
+			Float fCarPartM72 = new Float(0.0f);
+			out.write(\"################### Rolling First Level Parts MV #####################\" + newLine);
+
+			int icnt = 1;
+			while (partItr.hasNext())
+			{
+				Hashtable htImmPart = (Hashtable) partItr.next();
+				String sPartName = (String) htImmPart.get(SELECT_NAME);
+				String sPartId = (String) htImmPart.get(SELECT_ID);
+				String sPartQty = (String) htImmPart.get(\"attribute[Quantity]\");
+				Float fPartQty = new Float(1.0f);
+				if (sPartQty != null && !\"null\".equals(sPartQty) && !\"\".equals(sPartQty) && !\"0.0\".equals(sPartQty))
+				{
+					 fPartQty = Float.valueOf(sPartQty);
+				}
+				System.out.println(\"sPartName >>\" + sPartName + \" Qty >> \" + fPartQty);
+				out.write(icnt + \". sPartName [\" + sPartName + \"] Qty [\" + fPartQty + \"]\" +  newLine);
+
+				HashMap hmImmPartMass = (HashMap) hmPartsMass.get(sPartId);
+				if (hmImmPartMass != null)
+				{
+					Float fTotal = (Float) hmImmPartMass.get(\"mTotal\");
+					Float f51a = (Float) hmImmPartMass.get(\"m51a\");
+					Float f51b = (Float) hmImmPartMass.get(\"m51b\");
+					Float f52 = (Float) hmImmPartMass.get(\"m52\");
+					Float f53 = (Float) hmImmPartMass.get(\"m53\");
+					Float f541 = (Float) hmImmPartMass.get(\"m541\");
+					Float f542 = (Float) hmImmPartMass.get(\"m542\");
+					Float f543 = (Float) hmImmPartMass.get(\"m543\");
+					Float f551 = (Float) hmImmPartMass.get(\"m551\");
+					Float f552 = (Float) hmImmPartMass.get(\"m552\");
+					Float f72 = (Float) hmImmPartMass.get(\"m72\");
+
+                    fTotal = fTotal * fPartQty;
+					fCarPartMTotal = fCarPartMTotal + fTotal;
+                    f51a = f51a * fPartQty;
+					fCarPartM51a = fCarPartM51a + f51a;
+                    f51b = f51b * fPartQty;
+					fCarPartM51b = fCarPartM51b + f51b;
+                    f52 = f52 * fPartQty;
+					fCarPartM52 = fCarPartM52 + f52;
+                    f53 = f53 * fPartQty;
+					fCarPartM53 = fCarPartM53 + f53;
+                    f541 = f541 * fPartQty;
+					fCarPartM541 = fCarPartM541 + f541;
+                    f542 = f542 * fPartQty;
+					fCarPartM542 = fCarPartM542 + f542;
+                    f543 = f543 * fPartQty;
+					fCarPartM543 = fCarPartM543 + f543;
+                    f551 = f551 * fPartQty;
+					fCarPartM551 = fCarPartM551 + f551;
+                    f552 = f552 * fPartQty;
+					fCarPartM552 = fCarPartM552 + f552;
+                    f72 = f72 * fPartQty;
+					fCarPartM72 = fCarPartM72 + f72;
+
+//                    out.write(\"[\" + fCarPartMTotal + \"]\" +  fCarPartMMTotal + \",\" + fCarPartMPoly+ \",\" + fCarPartMElas + \",\" + fCarPartMGlass
+//                            + \",\" + fCarPartMFluids + \",\" + fCarPartMMONM +newLine);
+				}
+
+			}// While partList hasNext()
+
+			Float fMV = new Float(0.0f);
+			if (sCalWeight != null && !\"\".equals(sCalWeight) && !\"null\".equals(sCalWeight))
+			{
+				fMV = Float.valueOf(sCalWeight);
+			}
+			System.out.println(\"FINAL MASS VARIABLES ARE\");
+			System.out.println(\"mTotal >>\" + fCarPartMTotal);
+			System.out.println(\"m51a >>\" + fCarPartM51a);
+			System.out.println(\"m51b >>\" + fCarPartM51b);
+			System.out.println(\"m52 >>\" + fCarPartM52);
+			System.out.println(\"m53 >>\" + fCarPartM53);
+			System.out.println(\"m541 >>\" + fCarPartM541);
+			System.out.println(\"m542 >>\" + fCarPartM542);
+			System.out.println(\"m543 >>\" + fCarPartM543);
+			System.out.println(\"m551 >>\" + fCarPartM551);
+			System.out.println(\"m552 >>\" + fCarPartM552);
+			System.out.println(\"m72 >>\" + fCarPartM72);
+
+			hmFinalMassVars = new HashMap(8);
+			hmFinalMassVars.put(\"mtotal\",fCarPartMTotal);
+			hmFinalMassVars.put(\"m51a\",fCarPartM51a);
+			hmFinalMassVars.put(\"m51b\",fCarPartM51b);
+			hmFinalMassVars.put(\"m52\",fCarPartM52);
+			hmFinalMassVars.put(\"m53\",fCarPartM53);
+			hmFinalMassVars.put(\"m541\",fCarPartM541);
+			hmFinalMassVars.put(\"m542\",fCarPartM542);
+			hmFinalMassVars.put(\"m543\",fCarPartM543);
+			hmFinalMassVars.put(\"m551\",fCarPartM551);
+			hmFinalMassVars.put(\"m552\",fCarPartM552);
+			hmFinalMassVars.put(\"m72\",fCarPartM72);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} finally {
+			if (out != null)
+			{
+				out.close();
+			}
+		}
+
+		System.out.println(\"generateMTrDetailsReport ENDS\");
+		return hmFinalMassVars;
+	}
+	/**
+	 * Gets the directly connected Objects to context Object.
+	 *
+	 */
+
+	public MapList getEBOMStructureWithMEP(Context context, String strObjId,
+		String strRelationship, String strType) throws Exception
+	{
+
+		try {
+			// Business Object Selects
+			StringList busSelects = new StringList(7);
+			busSelects.addElement(SELECT_ID);
+			busSelects.addElement(SELECT_NAME);
+			busSelects.addElement(SELECT_TYPE);
+			busSelects.addElement(SELECT_DESCRIPTION);
+			busSelects.addElement(SELECT_REVISION);
+			busSelects.addElement(\"attribute[Production Make Buy Code]\");
+			busSelects.addElement(\"attribute[GWM 22628 Mass Variable]\");
+
+			// RelationShip Selects
+			StringList relSelects = new StringList(2);
+			relSelects.addElement(SELECT_RELATIONSHIP_ID);
+			relSelects.addElement(SELECT_RELATIONSHIP_NAME);
+
+			// Calls the method in MaterialComplianceCommonBase
+			return getWhereUsed(context, strObjId, strType, strRelationship,
+				busSelects, relSelects, (short) 0);
+		} catch (Exception e) {
+			throw new FrameworkException(e.toString());
+		}
+	}
+
+	/**
+	 * Gets the directly connected Objects to context Object.
+	 *
+	 */
+
+	public MapList getSingleLevelEBOMStructureWithMEP(Context context, String strObjId,
+		String strRelationship, String strType) throws Exception
+	{
+
+		try {
+			// Business Object Selects
+			StringList busSelects = new StringList(5);
+			busSelects.addElement(SELECT_ID);
+			busSelects.addElement(SELECT_NAME);
+			busSelects.addElement(SELECT_TYPE);
+			busSelects.addElement(SELECT_DESCRIPTION);
+			busSelects.addElement(SELECT_REVISION);
+			busSelects.addElement(\"attribute[Production Make Buy Code]\");
+			busSelects.addElement(\"attribute[GWM Design Weight(g)]\");
+
+			// RelationShip Selects
+			StringList relSelects = new StringList(1);
+			relSelects.addElement(SELECT_RELATIONSHIP_ID);
+			relSelects.addElement(SELECT_RELATIONSHIP_NAME);
+			relSelects.addElement(\"attribute[Quantity]\");
+
+			// Calls the method in MaterialComplianceCommonBase
+			return getWhereUsed(context, strObjId, strType, strRelationship,
+				busSelects, relSelects, (short) 1);
+		} catch (Exception e) {
+			throw new FrameworkException(e.toString());
+		}
+	}
+
+
+	/**
+	 * Gets the directly connected Objects to context Object.
+	 *
+	 */
+
+	public MapList getMEPMaterial(Context context, String strObjId,
+		String strRelationship, String strType) throws Exception
+	{
+
+		try {
+			// Business Object Selects
+			StringList busSelects = new StringList(8);
+			busSelects.addElement(SELECT_ID);
+			busSelects.addElement(SELECT_NAME);
+			busSelects.addElement(SELECT_TYPE);
+			busSelects.addElement(SELECT_DESCRIPTION);
+			busSelects.addElement(SELECT_REVISION);
+			busSelects.addElement(\"attribute[GWM Classification]\");
+			busSelects.addElement(\"attribute[GWM recoverability]\");
+			busSelects.addElement(\"attribute[GWM recyclability]\");
+
+	
+			// RelationShip Selects
+			StringList relSelects = new StringList(3);
+			relSelects.addElement(SELECT_RELATIONSHIP_ID);
+			relSelects.addElement(SELECT_RELATIONSHIP_NAME);
+			relSelects.addElement(\"attribute[Quantity]\");
+
+			// Calls the method in MaterialComplianceCommonBase
+			return getWhereUsed(context, strObjId, strType, strRelationship,
+				busSelects, relSelects, (short) 1);
+		} catch (Exception e) {
+			throw new FrameworkException(e.toString());
+		}
+	}
+
+
+	/**
+	 * Gets all the connected Objects to context Object.
+	 *
+	 */
+	public MapList getIndirectlyAssociated(Context context, String[] args)
+		throws Exception
+	{
+		try {
+			// The packed argument send from the JPO invoke method is unpacked
+			// to retrive the HashMap.
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			// The object id of the context object is retrieved from the HashMap
+			// using the appropriate key.
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String strRelation = (String) programMap.get(\"allRelationship\");
+			String strType = (String) programMap.get(\"allType\");
+
+			// The domain object class is initialized using the context object
+			// id.
+
+			StringList busSelects = new StringList(5);
+			busSelects.addElement(SELECT_ID);
+			busSelects.addElement(SELECT_NAME);
+			busSelects.addElement(SELECT_TYPE);
+			busSelects.addElement(SELECT_DESCRIPTION);
+			busSelects.addElement(SELECT_REVISION);
+
+			StringList relSelects = new StringList();
+
+			return getWhereUsed(context, strObjectId, strType, strRelation,
+				busSelects, relSelects, (short) 0);
+		} catch (Exception e) {
+			throw new FrameworkException(e.getMessage());
+		}
+	}
+
+	/**
+	 * Gets all the connected Parts to Material.
+	 */
+
+	public MapList getIndirectlyAssociatedParts(Context context, String[] args)
+		throws Exception
+	{
+		try {
+			// The packed argument send from the JPO invoke method is unpacked
+			// to retrive the HashMap.
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			// The object id of the context object is retrieved from the HashMap
+			// using the appropriate key.
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String strRelation = (String) programMap.get(\"allRelationship\");
+			String strAllType = (String) programMap.get(\"allType\");
+			String strType = (String) programMap.get(\"type\");
+
+    		DomainObject partObj = new DomainObject(strObjectId);
+			String strVault = partObj.getVault();
+
+			StringBuffer sbInclType = new StringBuffer(128);
+			StringBuffer sbType = new StringBuffer(128);
+
+			if (strAllType != null && !\"null\".equals(strAllType)
+				&& !\"\".equals(strAllType))
+			{
+				StringList typeList = FrameworkUtil.split(strAllType, \",\");
+				for (int typeItr = 0; typeItr < typeList.size(); typeItr++) {
+					sbInclType.append(\",\");
+					String parentType = PropertyUtil.getSchemaProperty(context,
+						(String) typeList.get(typeItr));
+					sbInclType.append(parentType);
+					sbInclType.append(\",\");
+					BusinessType bt = new BusinessType(parentType,new Vault(strVault));
+					BusinessTypeList busTypeList = bt.getChildren(context);
+					BusinessTypeItr itr = new BusinessTypeItr(busTypeList);
+					while (itr.next())
+					{
+						sbInclType.append(\",\");
+						BusinessType busTypeName = itr.obj();
+						sbInclType.append(busTypeName.toString());
+					}
+				}
+			}
+			if (sbInclType.length() > 1) {
+				sbInclType.deleteCharAt(0);
+			}
+
+			if (strType != null && !\"null\".equals(strType)
+				&& !\"\".equals(strType))
+			{
+				sbType.append(strType);
+				sbType.append(\",\");
+				sbType.append(sbInclType.toString());
+			}
+
+			StringList busSelects = new StringList(5);
+			busSelects.addElement(SELECT_ID);
+			busSelects.addElement(SELECT_NAME);
+			busSelects.addElement(SELECT_TYPE);
+			busSelects.addElement(SELECT_DESCRIPTION);
+			busSelects.addElement(SELECT_REVISION);
+
+			StringBuffer sbRelation = new StringBuffer(128);
+
+			if (strRelation != null && !\"null\".equals(strRelation)
+				&& !\"\".equals(strRelation))
+			{
+				StringList relList = FrameworkUtil.split(strRelation, \",\");
+				for (int i = 0; i < relList.size(); i++) {
+					sbRelation.append(\",\");
+					sbRelation.append(PropertyUtil.getSchemaProperty(context,
+						(String) relList.get(i)));
+				}
+			}
+			if (sbRelation.length() > 1) {
+				sbRelation.deleteCharAt(0);
+			}
+
+            MapList partList = partObj.getRelatedObjects(context, sbRelation.toString(),
+				sbType.toString(), busSelects,null, true, false,(short) 0,  null,  null,
+				new Pattern(sbInclType.toString()), null, null);
+            //Workaround for Bug 328123. Doing the foced sorting [Ascending] on level value present in the partList before passing it to the table.
+            partList.sort(SELECT_LEVEL,\"ascending\",\"string\");
+			return partList;
+		} catch (Exception e) {
+			throw new FrameworkException(e.getMessage());
+		}
+	}
+
+//}
+
+//add by Xu  09/18/2009
+/**
+	 * Gets the No TestReport Part List.
+	 *
+	 */
+
+	public MapList getGWMCNoTestReportPartsList(Context context, String[] args)
+		throws Exception
+	{
+		System.out.println(\"getGWMCTestReportVariablePartsList STARTS\");
+		MapList resultTestReportList = new MapList();
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			// The object id of the context object is retrieved from the HashMap
+			// using the appropriate key.
+			String strObjectId = (String) programMap.get(\"objectId\");
+			String reportMV = (String) programMap.get(\"reportMV\");
+			
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			String sRelEBOM = PropertyUtil.getSchemaProperty(context,\"relationship_EBOM\");
+			    
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			// Calls the method which directly accepts the Object ID
+			StringList busSelects = new StringList(8);
+			busSelects.addElement(SELECT_ID);
+			busSelects.addElement(SELECT_NAME);
+			busSelects.addElement(SELECT_TYPE);
+			busSelects.addElement(SELECT_REVISION);
+			busSelects.addElement(\"attribute[GWMCEnglishName]\");
+			busSelects.addElement(\"attribute[GWMCPartName]\");
+			busSelects.addElement(\"attribute[Calculated Weight]\");
+			busSelects.addElement(\"attribute[GWMCTestReportNumber]\");
+			busSelects.addElement(\"attribute[GWMCVendorCode]\");
+
+			// RelationShip Selects
+			StringList relSelects = new StringList(2);
+			relSelects.addElement(SELECT_RELATIONSHIP_ID);
+			relSelects.addElement(SELECT_RELATIONSHIP_NAME);
+                         
+			ContextUtil.pushContext(context);
+			MapList mapList = dmCarPart.getRelatedObjects(context, 
+							sRelEBOM,
+							\"*\",
+							false,
+							true,
+							0,
+							busSelects, 
+							relSelects, 
+							null, 
+							null,
+							null,
+							null,
+							null);
+			Iterator itr = mapList.iterator();
+			while (itr.hasNext()) 
+			{
+				Hashtable htPart = (Hashtable) itr.next();
+				String sName = (String) htPart.get(SELECT_NAME);
+                String sType = (String) htPart.get(SELECT_TYPE);
+				String sGWMCTestReport = (String) htPart.get(\"attribute[GWMCTestReportNumber]\");
+				System.out.println(sName + \" >> GWMCTestReportNumber >>[\" + sGWMCTestReport+ \"]\");
+                //if (sGWMCTestReport != null && reportMV.equals(sMassVariable))
+			//	if(sGWMCTestReport.length()==0 && sType.length()<5 && sName.length()>9 && !sName.endsWith(\"JC\") && !sName.endsWith(\"HC1\") && !sName.endsWith(\"AL1\"))
+			if(sGWMCTestReport.length()!=0)
+				{
+                 resultTestReportList.add(htPart);
+                }
+                else
+				{
+				//System.out.println(\"The part TestReportNumber is not null\");	
+				}
+			}
+
+			ContextUtil.popContext(context);
+			//mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"string\");
+			System.out.println(\"Map >>\" + mapList);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} 
+
+		System.out.println(\"getGWMCTestReportVariablePartsList ENDS\");
+		return resultTestReportList;
+         
+            
+
+		}
+//20091216 ReachReport
+	public MapList generateREACHSubstancesReport(Context context, String[] args) throws Exception {
+		System.out.println(\"lsy_casNoList\");
+    	Set set_cas = new HashSet();//add by lsy
+		System.out.println(\"generateREACHSubstancesReport STARTS NEW\");
+		MapList mlSubs = new MapList();
+		Hashtable htGWMSub = null;
+		DomainObject dmPart = new DomainObject();
+		try {
+			HashMap programMap = (HashMap) JPO.unpackArgs(args);
+			String strObjectId = (String) programMap.get(\"objectId\");
+			StringList slFinalPartList = new StringList();
+			String sAttrCalWeight = PropertyUtil.getSchemaProperty(\"attribute_CalculatedWeight\");
+			String sTypeT1SupplierPart = PropertyUtil.getSchemaProperty(\"type_T1SupplierPart\");
+			String sRelManufacturerEquivalent = PropertyUtil.getSchemaProperty(\"relationship_ManufacturerEquivalent\");
+			String sRelComponentMaterial = PropertyUtil.getSchemaProperty(\"relationship_ComponentMaterial\");
+			String sRelComponentSubstance = PropertyUtil.getSchemaProperty(\"relationship_ComponentSubstance\");
+			String sRelEBOM = PropertyUtil.getSchemaProperty(context,\"relationship_EBOM\");
+			setCommonSelects();
+			
+			DomainObject dmCarPart = new DomainObject(strObjectId);
+			// Calls the method which directly accepts the Object ID
+			MapList mapList = dmCarPart.getRelatedObjects(context, 
+															sRelEBOM,
+															\"*\",
+															false,
+															true,
+															(short)0,
+															GWMpartSelects, 
+															GWMRelEBOMSelects, 
+															null, 
+															null,
+															null,
+															null,
+															null);
+			System.out.println(\"All Parts >>\" + mapList);
+			mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"string\");
+			Iterator itr = mapList.iterator();
+			HashMap hmPartsMass = new HashMap();
+			while (itr.hasNext())
+			{
+				Hashtable htPart = (Hashtable) itr.next();
+				String htID = (String) htPart.get(SELECT_ID);
+				String htType = (String) htPart.get(SELECT_TYPE);
+				String htName = (String) htPart.get(SELECT_NAME);
+				String htRev = (String) htPart.get(SELECT_REVISION);
+				String htRelName = (String) htPart.get(SELECT_RELATIONSHIP_NAME);
+				String htCalWeight = (String) htPart.get(\"attribute[Calculated Weight]\");
+				String htVendorCode = (String) htPart.get(\"attribute[GWMCVendorCode]\");
+				Float fCalWeight = new Float(1.0f);
+				if (htCalWeight != null && !\"null\".equals(htCalWeight) && !\"\".equals(htCalWeight) && !\"0.0\".equals(htCalWeight))
+				{
+					 fCalWeight = Float.valueOf(htCalWeight);
+				}
+
+				if (htType.equals(sTypeT1SupplierPart))
+				{
+					// get MEP and in turn get all REACH substances Supplier Part -- 1:1--> MEP
+					System.out.println(\"Getting REACH Subs for Supplier Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					DomainObject dmGWMSupplierPart = new DomainObject(htID);
+					String sParentGWMPartName = dmGWMSupplierPart.getInfo(context, \"to[EBOM].from.name\");
+					String sParentGWMPartId = dmGWMSupplierPart.getInfo(context, \"to[EBOM].from.id\");
+					String sParentType = \"\";
+					String sParentRev = \"\";
+					if (sParentGWMPartId != null && !\"\".equals(sParentGWMPartId) && !\"null\".equals(sParentGWMPartId))
+					{
+						dmPart.setId(sParentGWMPartId);
+						sParentType = dmPart.getInfo(context, DomainObject.SELECT_TYPE);
+						sParentRev = dmPart.getInfo(context, DomainObject.SELECT_REVISION);
+					}
+					System.out.println(\"sParentGWMPartName >>\" + sParentGWMPartName);
+					System.out.println(\"sParentGWMPartId >>\" + sParentGWMPartId);
+
+					Hashtable htMEP = getMEP(context, dmGWMSupplierPart);
+					if (htMEP != null)
+					{
+						String sMEPId = (String) htMEP.get(SELECT_ID);
+						// One and only MEP. Now get all materials related to this MEP
+						DomainObject dmMEP = new DomainObject(sMEPId);
+						MapList mlMEPMaterails = dmMEP.getRelatedObjects(context, 
+															sRelComponentMaterial,
+															\"Material\",
+															false,
+															true,
+															(short)1,
+															GWMMaterialSelects,
+															GWMRelComponentMaterialSelects,
+															null, 
+															null,
+															null,
+															null,
+															null);
+						Iterator matItr = mlMEPMaterails.iterator();
+						while (matItr.hasNext())
+						{
+							Hashtable htMat = (Hashtable) matItr.next();
+							String sMatId = (String) htMat.get(SELECT_ID);
+							String sMatName = (String) htMat.get(SELECT_NAME);
+							String sMatQty = (String) htMat.get(\"attribute[Quantity]\");
+							Float fMatQty = new Float(1.0f);
+							if (sMatQty != null && !\"null\".equals(sMatQty) && !\"\".equals(sMatQty) && !\"0.0\".equals(sMatQty))
+							{
+								 fMatQty = Float.valueOf(sMatQty);
+							}
+							DomainObject dmMat = new DomainObject(sMatId);
+							MapList mlImmMEPSubs = dmMat.getRelatedObjects(context, 
+																sRelComponentSubstance,
+																\"Substance\",
+																false,
+																true,
+																(short)1,
+																GWMSubstanceSelects,
+																GWMRelComponentSubstanceSelects,
+																null, 
+																null,
+																null,
+																null,
+																null);
+							System.out.println(\"Found Subs under MEP >>\" + mlImmMEPSubs);
+							Iterator subItr = mlImmMEPSubs.iterator();
+							while (subItr.hasNext())
+							{
+								htGWMSub = new Hashtable();
+								Hashtable htSub = (Hashtable) subItr.next();
+								String sSubId = (String) htSub.get(SELECT_ID);
+								//changed by lsy 20191019 start
+								//String sSubName = (String) htSub.get(SELECT_NAME);
+								String sSubName = (String) htSub.get(\"attribute[Substance Name]\");
+								//changed by lsy 20191019 end
+								String sSubCASNumber = (String) htSub.get(\"attribute[CAS Number]\");
+								set_cas.add(sSubCASNumber);//add by lsy
+								String sSubREACH = (String) htSub.get(\"attribute[GWM REACH]\");
+								if (sSubREACH != null && !\"ROS\".equals(sSubREACH) && !\"SVHC\".equals(sSubREACH) &&!\"ROS/SVHC\".equals(sSubREACH))
+								{
+									continue;
+								}
+								String sSubQty = (String) htSub.get(\"attribute[Quantity]\");
+								Float fSubQty = new Float(1.0f);
+								if (sSubQty != null && !\"null\".equals(sSubQty) && !\"\".equals(sSubQty) && !\"0.0\".equals(sSubQty))
+								{
+									 fSubQty = Float.valueOf(sSubQty);
+								}
+
+								System.out.println(fSubQty + \"*\" + fMatQty + \"/\" + fCalWeight+\"This Line\");
+								Float fQtyInPart = (fSubQty * fMatQty)/ fCalWeight;
+
+								htGWMSub.put(\"CASNumber\",sSubCASNumber);
+
+								htGWMSub.put(\"SubName\",sSubName);
+								htGWMSub.put(\"SubREACH\",sSubREACH);
+								htGWMSub.put(\"MatName\",sMatName);
+								htGWMSub.put(\"CompSubQty\",sSubQty);
+								htGWMSub.put(\"PartType\",sParentType);
+								htGWMSub.put(\"PartName\",sParentGWMPartName);
+								htGWMSub.put(\"PartRev\",sParentRev);
+								htGWMSub.put(\"SubInPartQty\",fQtyInPart.toString());
+								htGWMSub.put(\"VendorCode\",htVendorCode);
+
+								mlSubs.add(htGWMSub);
+							}//for each sub ends
+						}
+					}
+
+				} else {
+					// there will be 3 cases for this. 
+					// 1. this is end item gwm part with no supplier part but MEP>>Materials
+					// 2. this is end item gwm part with sup part which in turn connected with MEP>>Materials
+					// 3. this is a middle level part for eg. Car Part >> ...>>This part>>...>>Sup Part>>MEP>>Material
+					System.out.println(\"GWM Part >>\" + htName + \" >> \" + htRelName + \" >> \" + htType);
+					DomainObject dmGWMPart = new DomainObject(htID);
+					// If it is end item GWM Part then check if Supplier Part/MEP is recyclable or not
+					StringList sNextEBOMIds = dmGWMPart.getInfoList(context, \"from[EBOM].to.id\");
+					StringList sNextEBOMTypes  = dmGWMPart.getInfoList(context, \"from[EBOM].to.type\");
+					if (sNextEBOMIds != null && sNextEBOMIds.size() > 0)
+					{
+						// this could be case 2 Most common
+						if (sNextEBOMTypes != null && sNextEBOMTypes.contains(sTypeT1SupplierPart))
+						{
+							System.out.println(\"Case 2. this is end item gwm part with sup part\");
+						} else {
+							//this is case 3 so skip this part and continue
+							System.out.println(\"Case 3. this is a middle level part\");
+							continue;
+						}
+					} else {
+						// this is case 1.this is end item gwm part with no supplier part but MEP>>Materials
+						System.out.println(\"Case 1. this is end item gwm part with no supplier part but MEP>>Materials\");
+						Hashtable htMEP = getMEP(context, dmGWMPart);
+						if (htMEP != null)
+						{
+							System.out.println(\"Found MEP >>\" + htMEP);
+							String sMEPId = (String) htMEP.get(SELECT_ID);
+							// One and only MEP. Now get all materials related to this MEP
+							DomainObject dmMEP = new DomainObject(sMEPId);
+							MapList mlMEPMaterails = dmMEP.getRelatedObjects(context, 
+																sRelComponentMaterial,
+																\"Material\",
+																false,
+																true,
+																(short)0,
+																GWMMaterialSelects,
+																GWMRelComponentMaterialSelects,
+																null, 
+																null,
+																null,
+																null,
+																null);
+							Iterator matItr = mlMEPMaterails.iterator();
+							while (matItr.hasNext())
+							{
+								Hashtable htMat = (Hashtable)matItr.next();
+								String sMatId = (String) htMat.get(SELECT_ID);
+								String sMatName = (String) htMat.get(SELECT_NAME);
+								String sMatQty = (String) htMat.get(\"attribute[Quantity]\");
+								Float fMatQty = new Float(1.0f);
+								if (sMatQty != null && !\"null\".equals(sMatQty) && !\"\".equals(sMatQty) && !\"0.0\".equals(sMatQty))
+								{
+									 fMatQty = Float.valueOf(sMatQty);
+								}
+								DomainObject dmMat = new DomainObject(sMatId);
+								MapList mlImmMEPSubs = dmMat.getRelatedObjects(context, 
+																	sRelComponentSubstance,
+																	\"Substance\",
+																	false,
+																	true,
+																	(short)0,
+																	GWMSubstanceSelects,
+																	GWMRelComponentSubstanceSelects,
+																	null, 
+																	null,
+																	null,
+																	null,
+																	null);
+								System.out.println(\"Found Subs under MEP >>\" + mlImmMEPSubs);
+
+								Iterator subItr = mlImmMEPSubs.iterator();
+								while (subItr.hasNext())
+								{
+									htGWMSub = new Hashtable();
+									Hashtable htSub = (Hashtable) subItr.next();
+									String sSubId = (String) htSub.get(SELECT_ID);
+									String sSubName = (String) htSub.get(SELECT_NAME);
+									String sSubCASNumber = (String) htSub.get(\"attribute[CAS Number]\");
+									String sSubREACH = (String) htSub.get(\"attribute[GWM REACH]\");
+									set_cas.add(sSubCASNumber);//add by lsy
+									if (sSubREACH != null && !\"ROS\".equals(sSubREACH) && !\"SVHC\".equals(sSubREACH) &&!\"ROS/SVHC\".equals(sSubREACH))
+									{
+
+										continue;
+
+									}
+									String sSubQty = (String) htSub.get(\"attribute[Quantity]\");
+									Float fSubQty = new Float(1.0f);
+									if (sSubQty != null && !\"null\".equals(sSubQty) && !\"\".equals(sSubQty) && !\"0.0\".equals(sSubQty))
+									{
+										 fSubQty = Float.valueOf(sSubQty);
+									}
+									System.out.println(fSubQty + \"*\" + fMatQty + \"/\" + fCalWeight);
+									Float fQtyInPart = (fSubQty * fMatQty)/ fCalWeight;
+
+									htGWMSub.put(\"CASNumber\",sSubCASNumber);
+									htGWMSub.put(\"SubName\",sSubName);
+									htGWMSub.put(\"SubREACH\",sSubREACH);
+									htGWMSub.put(\"MatName\",sMatName);
+									htGWMSub.put(\"CompSubQty\",sSubQty);
+									htGWMSub.put(\"PartType\",htType);
+									htGWMSub.put(\"PartName\",htName);
+									htGWMSub.put(\"PartRev\",htRev);
+									htGWMSub.put(\"SubInPartQty\",fQtyInPart.toString());
+									htGWMSub.put(\"VendorCode\",htVendorCode);
+									mlSubs.add(htGWMSub);
+									
+								}//for each sub ends
+							}
+						}
+					}
+				}
+			}// while each part
+			System.out.println(\"lsy CasNoList:\"+set_cas);//add by lsy
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(\"sfjkdkjfjkds\");
+			//throw new FrameworkException(e.getMessage());
+		} 
+		System.out.println(\"generateREACHSubstancesReport ENDS NEW\");
+		return mlSubs;
+
+	}
+
+		
+		
+		
+		
+		
+		
+		
+		//add by xu
+public MapList generateMaterialUnRecyclabeReport(Context context ,String [] args) throws Exception{
+	System.out.println(\"generateMaterial Unrecoverable Part Report STARTS NEW\");
+  MapList partList=new MapList();
+  DomainObject dmPart =new DomainObject();
+  Hashtable htGWMPart;
+  try  {
+  
+       HashMap programMap =(HashMap) JPO.unpackArgs(args);
+	   java.util.Set set=programMap.entrySet();
+	   Iterator itr1=set.iterator();
+	   while (itr1.hasNext())
+	   {
+		   
+		   Map.Entry me=(Map.Entry)itr1.next();
+		  
+	   }
+       String strObjectId =(String) programMap.get(\"objectId\");       
+       String classType   =(String)programMap.get(\"classType\");       
+       StringList slFinalPartList=new StringList();
+       String  sTypeT1SupplierPart        =PropertyUtil.getSchemaProperty(\"type_T1SupplierPart\");
+       String  sRelManufacturerEquivalent =PropertyUtil.getSchemaProperty(\"relationship_ManufacturerEquivalent\");
+       String  sRelEBOM                   =PropertyUtil.getSchemaProperty(\"relationship_EBOM\");
+       String  sRelComponentMaterial      =PropertyUtil.getSchemaProperty(\"relationship_ComponentMaterial\");
+       
+       StringList partSelects  =new StringList();
+       partSelects.addElement(SELECT_ID);
+       partSelects.addElement(SELECT_NAME);
+       partSelects.addElement(SELECT_TYPE);
+       partSelects.addElement(SELECT_REVISION);
+       partSelects.addElement(SELECT_DESCRIPTION);
+       partSelects.addElement(\"attribute[GWM English Part Name]\");
+       partSelects.addElement(\"attribute[GWMCPartName]\");
+
+       partSelects.addElement(\"attribute[GWM 22628 Mass Variable]\");
+       
+       StringList ebomSelects= new StringList();
+       ebomSelects.addElement(SELECT_RELATIONSHIP_ID);
+       ebomSelects.addElement(SELECT_RELATIONSHIP_NAME);
+       
+       StringList matSelects =new StringList();
+       matSelects.addElement(SELECT_ID);
+       matSelects.addElement(SELECT_NAME);
+       matSelects.addElement(\"attribute[GWM Classification]\");
+       matSelects.addElement(\"attribute[GWM recyclability]\");
+       matSelects.addElement(\"attribute[GWM recoverability]\");
+	   
+       
+       StringList matRelSelects =new StringList();
+       matRelSelects.addElement(SELECT_RELATIONSHIP_ID);
+       
+       
+       DomainObject dmCarPart = new DomainObject(strObjectId);
+       MapList mapList        =dmCarPart.getRelatedObjects(context,
+                                                           sRelEBOM,
+                                                           \"*\",
+                                                           false,
+                                                           true,
+                                                           (short)0,
+                                                           partSelects,
+                                                           ebomSelects,
+                                                           null,
+                                                           null,
+                                                           null,
+                                                           null,
+                                                           null);
+      mapList.sort(DomainObject.SELECT_LEVEL,\"descending\",\"string\");
+      Iterator itr=mapList.iterator();
+      while (itr.hasNext())
+      {
+        Hashtable htPart =(Hashtable)itr.next();
+        String htID      =(String)htPart.get(SELECT_ID);
+        String htType    =(String)htPart.get(SELECT_TYPE);
+        String htName    =(String)htPart.get(SELECT_NAME);
+        String htRev     =(String)htPart.get(SELECT_REVISION);
+        String htEnglishPartName  =(String)htPart.get(SELECT_DESCRIPTION);
+        String htPartName         =(String)htPart.get(\"attribute[GWMCPartName]\");
+        String htDesc = (String) htPart.get(\"attribute[GWM English Part Name]\");
+        String htRelName          =(String)htPart.get(SELECT_RELATIONSHIP_NAME);
+        String htVariable    =(String)htPart.get(\"attribute[GWM 22628 Mass Variable]\");
+        System.out.println(htVariable);
+        if (htVariable.equals(\"mD\") || htVariable.equals(\"Non-Reusable\") || htVariable.equals(\"mP\")){
+         System.out.println(htVariable);        
+         System.out.println(\"The Part attribute is \");
+        continue;
+        }
+        
+        DomainObject dmGWMSupplierPart = new DomainObject(htID);
+        Hashtable htMEP   =getMEPEx(context,dmGWMSupplierPart);
+        if (htType.equals(sTypeT1SupplierPart) && (htMEP!=null))
+        {
+        
+						String sMEPId = (String) htMEP.get(SELECT_ID);
+						// One and only MEP. Now get all materials related to this MEP
+						DomainObject dmMEP = new DomainObject(sMEPId);
+						MapList mlMEPMaterails = dmMEP.getRelatedObjects(context, 
+															sRelComponentMaterial,
+															\"Material\",
+															false,
+															true,
+															(short)1,
+															matSelects,
+															matRelSelects,
+															null, 
+															null,
+															null,
+															null,
+															null);
+						Iterator matItr = mlMEPMaterails.iterator();
+						while (matItr.hasNext())
+						{
+							Hashtable htMat = (Hashtable) matItr.next();
+							String sMatId = (String) htMat.get(SELECT_ID);
+							String sMatName = (String) htMat.get(SELECT_NAME);
+							String sGWMClass = (String) htMat.get(\"attribute[GWM Classification]\");
+							String sRecy      =(String)htMat.get(\"attribute[GWM recyclability]\");
+							String sReco      =(String)htMat.get(\"attribute[GWM recoverability]\");
+							if (sRecy.equals(\"No\") && sReco.equals(\"No\"))
+							{
+								htGWMPart = new Hashtable();
+								htGWMPart.put(\"PartType\",htType);
+								htGWMPart.put(\"PartName\",htName);
+								htGWMPart.put(\"PartRev\",htRev);
+								htGWMPart.put(\"EngPartName\",htEnglishPartName);
+								htGWMPart.put(\"Desc\",htDesc);
+								htGWMPart.put(\"Material\",sMatName);
+								htGWMPart.put(\"MaterialClassification\",sGWMClass);
+								partList.add(htGWMPart);
+								break;
+							}
+						} // while each material ends
+					}
+        }
+       
+  }
+  
+       
+  
+     
+ catch (Exception e) {
+			e.printStackTrace();
+			throw new FrameworkException(e.getMessage());
+		} 
+		System.out.println(\"generate Material Unrecoverable Part Report ENDS\");
+		return partList;
+
+	}
+
+
+		
+		
+		
+		
+		
+		
+		
+		
+		}

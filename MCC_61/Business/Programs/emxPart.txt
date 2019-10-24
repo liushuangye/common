@@ -1,0 +1,62 @@
+/*   emxPart.
+**
+**   Copyright (c) 2002-2007 Dassault Systemes.
+**   All Rights Reserved.
+**   This program contains proprietary and trade secret information of MatrixOne,
+**   Inc.  Copyright notice is precautionary only
+**   and does not evidence any actual or intended publication of such program.
+**
+**   This JPO contains the code for the "Part" business type.
+**
+**   static const char RCSID[] = $Id: emxPart.java.rca 1.8.1.2 Mon Aug  6 19:59:24 2007 przemek Experimental przemek $
+*/
+
+import matrix.db.*;
+import matrix.util.*;
+import java.util.*;
+import java.text.*;
+
+import com.matrixone.apps.domain.*;
+import com.matrixone.apps.domain.util.*;
+import com.matrixone.apps.engineering.*;
+import com.matrixone.apps.common.Company;
+import com.matrixone.apps.common.CommonDocument;
+
+
+import com.matrixone.apps.domain.util.FrameworkUtil;
+
+/**
+ * The <code>emxPart</code> class contains code for the "Part" business type.
+ *
+ * @version EC 9.5.JCI.0 - Copyright (c) 2002, MatrixOne, Inc.
+ */
+  public class ${CLASSNAME} extends ${CLASS:emxPartBase}
+  {
+      /**
+       * Constructor.
+       *
+       * @param context the eMatrix <code>Context</code> object.
+       * @param args holds no arguments.
+       * @throws Exception if the operation fails.
+       * @since EC 9.5.JCI.0.
+       */
+
+      public ${CLASSNAME} (Context context, String[] args)
+          throws Exception
+      {
+          super(context, args);
+      }
+    //add by liufeng 2019.10.17
+   //This is a way to update the part weight attribute values
+   public Boolean updateWeight(Context context, String[] args) throws Exception
+    {
+        HashMap programMap = (HashMap)JPO.unpackArgs(args);
+        HashMap paramMap = (HashMap)programMap.get("paramMap");
+        String objectId  = (String)paramMap.get("objectId");
+        String newWeightValue = (String)paramMap.get("New Value");
+        DomainObject objRel = new DomainObject(objectId);
+        String attrWeight = PropertyUtil.getSchemaProperty(context,"attribute_Weight");
+        objRel.setAttributeValue(context,attrWeight, newWeightValue);
+        return new Boolean(true);
+    }
+  }

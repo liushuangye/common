@@ -1,0 +1,201 @@
+Type	Name	Rev	New Name	New Rev	Policy	State	Vault	Owner	description	CAS Number	Substance Name 	Originator	GWM GADSL	GWM From-To	GWM EC name	GWM EC number	GWM IUPAC name	GWM Molecular Formula	GWM Ref CAS name	GWM Ref CAS number	GWM Ref EC name	GWM Ref EC number	GWM Ref IUPAC name	GWM Reference Substance	GWM REACH
+Substance	SUB-900000000201		SUB-900000000201		Substance	Active	eService Production	creator		1996-88-9	8:2 Fluorotelomer methacrylate, 2-Propenoic acid, 2-methyl-, 3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-heptadecafluorodecyl ester		D												
+Substance	SUB-900000000202		SUB-900000000202		Substance	Active	eService Production	creator		20018-09-1	P-[(diiodomethyl)sulphonyl]toluene		D												
+Substance	SUB-900000000203		SUB-900000000203		Substance	Active	eService Production	creator		20427-59-2	Copper dihydroxide; Copper (II) hydroxide; Copper hydroxide		D												
+Substance	SUB-900000000204		SUB-900000000204		Substance	Active	eService Production	creator		20427-84-3	2-(2-(4-Nonylphenoxy)ethoxy)ethanol		D												
+Substance	SUB-900000000205		SUB-900000000205		Substance	Active	eService Production	creator		2043-54-1	C10-2 telomer B iodide:  		D												
+Substance	SUB-900000000206		SUB-900000000206		Substance	Active	eService Production	creator		2050-47-7	Dibromodiphenyl ether		P												
+Substance	SUB-900000000207		SUB-900000000207		Substance	Active	eService Production	creator		2052-07-5	2-bromobiphenyl		P												
+Substance	SUB-900000000208		SUB-900000000208		Substance	Active	eService Production	creator		206-44-0 	Fluoranthene		D												
+Substance	SUB-900000000209		SUB-900000000209		Substance	Active	eService Production	creator		206886-57-9	Cyclotetrasiloxane, 2-(4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,11-heptadecafluoroundecyl)-2,4,6,8-tetramethyl-, Si-[3-(oxiranylmethoxy)propyl] derivs 		D												
+Substance	SUB-900000000210		SUB-900000000210		Substance	Active	eService Production	creator		207122-15-4	2,2',4,4',5,6'-hexabromodiphenyl ether		P												
+Substance	SUB-900000000211		SUB-900000000211		Substance	Active	eService Production	creator		207122-16-5	2,2',3,4,4',5',6-Heptabromodiphenyl ether		P												
+Substance	SUB-900000000212		SUB-900000000212		Substance	Active	eService Production	creator		207678-51-1	Heptanoic acid, 2,3,3,4,4,5,5,6,6,7,7,7-dodecafluoro-2-(trifluoromethyl)-		D												
+Substance	SUB-900000000213		SUB-900000000213		Substance	Active	eService Production	creator		20859-73-8	Aluminium phosphide; Aluminium phosphide releasing phosphine (under BPR)		D/P												
+Substance	SUB-900000000214		SUB-900000000214		Substance	Active	eService Production	creator		2095-01-4	1,3-benzenediamine, 4,6-diethyl-2-methyl- 		D												
+Substance	SUB-900000000215		SUB-900000000215		Substance	Active	eService Production	creator		2095-02-5	1,3-benzenediamine, 2,4-diethyl-6-methyl- 		D												
+Substance	SUB-900000000216		SUB-900000000216		Substance	Active	eService Production	creator		21049-39-8	Sodium salts of perfluorononan-1-oic-acid 		D												SVHC
+Substance	SUB-900000000217		SUB-900000000217		Substance	Active	eService Production	creator		210880-92-5	Clothianidin; IFMB		D												
+Substance	SUB-900000000218		SUB-900000000218		Substance	Active	eService Production	creator		2113-57-7	3-bromobiphenyl		P												
+Substance	SUB-900000000219		SUB-900000000219		Substance	Active	eService Production	creator		2144-54-9	2-(Perfluorodecyl) ethyl methacrylate,  2- Propenoic acid, 2-methyl-, 3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,12-heneicosafluorododecyl ester		D												
+Substance	SUB-900000000220		SUB-900000000220		Substance	Active	eService Production	creator		214710-34-6	N-Didecyl-N-dipolyethoxyammonium borate; Didecylpolyoxethylammonium borate		D/P												
+Substance	SUB-900000000221		SUB-900000000221		Substance	Active	eService Production	creator		2150-54-1	C.I. Direct Blue 25, C.I.23790		D/P												
+Substance	SUB-900000000222		SUB-900000000222		Substance	Active	eService Production	creator		2164-17-2	Fluometuron		D/P												
+Substance	SUB-900000000223		SUB-900000000223		Substance	Active	eService Production	creator		21652-58-4	8-2 telomer olefin:   		D												
+Substance	SUB-900000000224		SUB-900000000224		Substance	Active	eService Production	creator		21850-44-2	1,1'-(isopropylidene)bis[3,5-dibromo-4-(2,3-dibromopropoxy)benzene]		D												
+Substance	SUB-900000000225		SUB-900000000225		Substance	Active	eService Production	creator		2195-05-3	2-bromo-1,3-difluoro-propane		P												
+Substance	SUB-900000000226		SUB-900000000226		Substance	Active	eService Production	creator		219697-10-6	Undecane, heptachloro-		P												
+Substance	SUB-900000000227		SUB-900000000227		Substance	Active	eService Production	creator		219697-11-7	Undecane, nonachloro-		P												
+Substance	SUB-900000000228		SUB-900000000228		Substance	Active	eService Production	creator		221174-07-8	Undecane, 1,2,10,11,?,?,?,?-octachloro-		P												
+Substance	SUB-900000000229		SUB-900000000229		Substance	Active	eService Production	creator		22205-30-7	Bis(dodecylthio)dioctylstannane		D/P												
+Substance	SUB-900000000230		SUB-900000000230		Substance	Active	eService Production	creator		22692-16-6	2-bromo-1,1,1,3,3-pentafluoro-propane		P												
+Substance	SUB-900000000231		SUB-900000000231		Substance	Active	eService Production	creator		2302-97-8	C.I. Direct Red 44, C.I.22500		D/P												
+Substance	SUB-900000000232		SUB-900000000232		Substance	Active	eService Production	creator		2354-06-5	1,1,1,3,3-Pentachlor-2,2,3-trifluoropropane		P												
+Substance	SUB-900000000233		SUB-900000000233		Substance	Active	eService Production	creator		2372-82-9	N-(3-aminopropyl)-N-dodecylpropane-1,3-diamine		D/P												
+Substance	SUB-900000000234		SUB-900000000234		Substance	Active	eService Production	creator		2390-60-5	Ethanaminium, N-[4-[[4-(diethylamino)phenyl][4-(ethylamino)-1-naphthalenyl]methylene]-2,5-cyclohexadien-1-ylidene]-N-ethyl-, chloride (Basic Blue 7)		D												
+Substance	SUB-900000000235		SUB-900000000235		Substance	Active	eService Production	creator		2390-68-3	Didecyldimethylammonium bromide		D/P												
+Substance	SUB-900000000236		SUB-900000000236		Substance	Active	eService Production	creator		2395-00-8	Potassium salt of PFOA 		P												
+Substance	SUB-900000000237		SUB-900000000237		Substance	Active	eService Production	creator		2398-96-1	Tolnaftate		D/P												
+Substance	SUB-900000000238		SUB-900000000238		Substance	Active	eService Production	creator		2420-98-6	Cadmium bis(2-ethylhexanoate)		D/P												
+Substance	SUB-900000000239		SUB-900000000239		Substance	Active	eService Production	creator		2425-77-6	2-Hexyldecan-1-ol		D												
+Substance	SUB-900000000240		SUB-900000000240		Substance	Active	eService Production	creator		2429-70-1	C.I. Direct Red 10, C.I.22145		D/P												
+Substance	SUB-900000000241		SUB-900000000241		Substance	Active	eService Production	creator		2429-71-2	C.I. Direct Blue 8, C.I.24140		D/P												
+Substance	SUB-900000000242		SUB-900000000242		Substance	Active	eService Production	creator		2429-72-3	C.I. Direct Blue 3, C.I.23705		D/P												
+Substance	SUB-900000000243		SUB-900000000243		Substance	Active	eService Production	creator		2429-74-5	C.I. Direct Blue 15, C.I.24400		D/P												
+Substance	SUB-900000000244		SUB-900000000244		Substance	Active	eService Production	creator		2429-75-6	C.I. Direct Violet 12, C.I.22550		D/P												
+Substance	SUB-900000000245		SUB-900000000245		Substance	Active	eService Production	creator		2429-80-3	C.I. Acid Orange 45, C.I.22195		D/P												
+Substance	SUB-900000000246		SUB-900000000246		Substance	Active	eService Production	creator		2440-22-4	2-(2H-benzotriazol-2-yl)-p-cresol (UV-P)		D												
+Substance	SUB-900000000247		SUB-900000000247		Substance	Active	eService Production	creator		2457-01-4	Barium bis(2-ethylhexanoate)		D												
+Substance	SUB-900000000248		SUB-900000000248		Substance	Active	eService Production	creator		24634-61-5	Potassium (E,E)-hexa-2,4-dienoate		D/P												
+Substance	SUB-900000000249		SUB-900000000249		Substance	Active	eService Production	creator		2491-38-5	2-bromo-1-(4-hydroxyphenyl)ethan-1-one		D/P												
+Substance	SUB-900000000250		SUB-900000000250		Substance	Active	eService Production	creator		2492-26-4	2(3H)-Benzothiazolethione,sodium salt (1:1)		D												
+Substance	SUB-900000000251		SUB-900000000251		Substance	Active	eService Production	creator		25155-23-1	Trixylyl phosphate		D												SVHC
+Substance	SUB-900000000252		SUB-900000000252		Substance	Active	eService Production	creator		25167-32-2	Benzenesulfonic acid, oxybis[dodecyl-, disodium salt		D												
+Substance	SUB-900000000253		SUB-900000000253		Substance	Active	eService Production	creator		25254-50-6	.alpha.,.alpha.',.alpha.'-trimethyl-1,3,5-triazine-1,3,5(2H,4H,6H)-triethanol		D/P												
+Substance	SUB-900000000254		SUB-900000000254		Substance	Active	eService Production	creator		2527-58-4	2,2'-dithiobis[N-methylbenzamide]		D/P												
+Substance	SUB-900000000255		SUB-900000000255		Substance	Active	eService Production	creator		25322-17-2	Naphthalenesulfonicacid, dinonyl- 		D												
+Substance	SUB-900000000256		SUB-900000000256		Substance	Active	eService Production	creator		25655-41-8	Polyvinylpyrrolidone iodine		D/P												
+Substance	SUB-900000000257		SUB-900000000257		Substance	Active	eService Production	creator		2586-57-4	C.I. Direct Blue 22, C.I.24280		D/P												
+Substance	SUB-900000000258		SUB-900000000258		Substance	Active	eService Production	creator		2586-58-5	C.I. Direct Brown 1:2, C.I.30110		D/P												
+Substance	SUB-900000000259		SUB-900000000259		Substance	Active	eService Production	creator		2586-60-9	C.I. Direct Violet 1, C.I.22570		D/P												
+Substance	SUB-900000000260		SUB-900000000260		Substance	Active	eService Production	creator		2610-05-1	C.I. Direct Blue 1, C.I.24410		D/P												
+Substance	SUB-900000000261		SUB-900000000261		Substance	Active	eService Production	creator		26391-11-7	2-bromo-1,1,2,3,3-pentafluoro-propane		P												
+Substance	SUB-900000000262		SUB-900000000262		Substance	Active	eService Production	creator		26523-78-4	Tris(nonylphenyl) phosphite (TNPP)		D												
+Substance	SUB-900000000263		SUB-900000000263		Substance	Active	eService Production	creator		26543-97-5	p-Isononylphenol		D												
+Substance	SUB-900000000264		SUB-900000000264		Substance	Active	eService Production	creator		26544-38-7	2,5-Furandione,dihydro-3-(tetrapropenyl)-		D												
+Substance	SUB-900000000265		SUB-900000000265		Substance	Active	eService Production	creator		265647-11-8	Silver sodium hydrogen zirconium phosphate		D												
+Substance	SUB-900000000266		SUB-900000000266		Substance	Active	eService Production	creator		26716-20-1	Homopolymer of 2-tert-butylaminoethyl methacrylate (EINECS 223-228-4)		D/P												
+Substance	SUB-900000000267		SUB-900000000267		Substance	Active	eService Production	creator		26761-46-6	Dibutyltin di(isooctyl 3-mercaptopropionate)		D/P												
+Substance	SUB-900000000268		SUB-900000000268		Substance	Active	eService Production	creator		2687-91-4	N-Ethyl-2-pyrrolidone (NEP)		D												
+Substance	SUB-900000000269		SUB-900000000269		Substance	Active	eService Production	creator		27083-27-8	Poly(hexamethylenebicyanoguanide-hexamethylenediamine) Hydrochloride		D/P												
+Substance	SUB-900000000270		SUB-900000000270		Substance	Active	eService Production	creator		27107-89-7	 2-ethylhexyl 10-ethyl-4-[[2-[(2-ethylhexyl)oxy]-2-oxoethyl]thio]-4-octyl-7-oxo-8-oxa-3,5-dithia-4-stannatetradecanoate (MOTE)		D/P												
+Substance	SUB-900000000271		SUB-900000000271		Substance	Active	eService Production	creator		27479-65-8	1,1'-Biphenyl, dibromo-		P												
+Substance	SUB-900000000272		SUB-900000000272		Substance	Active	eService Production	creator		276673-33-7	Undecane, decachloro-		P												
+Substance	SUB-900000000273		SUB-900000000273		Substance	Active	eService Production	creator		27668-52-6	Dimethyloctadecyl[3-(trimethoxysilyl)propyl]ammonium chloride		D												
+Substance	SUB-900000000274		SUB-900000000274		Substance	Active	eService Production	creator		2769-07-5	C.I. Direct Red 17, C.I.22150		D/P												
+Substance	SUB-900000000275		SUB-900000000275		Substance	Active	eService Production	creator		27753-52-2	Nonabromo-1,1′-biphenyl		P												
+Substance	SUB-900000000276		SUB-900000000276		Substance	Active	eService Production	creator		2781-09-1	Dibutyltin bis(octylthioglycolate)		D/P												
+Substance	SUB-900000000277		SUB-900000000277		Substance	Active	eService Production	creator		2781-10-4	Di-n-butyltin di-2-ethylhexanoate		D/P												
+Substance	SUB-900000000278		SUB-900000000278		Substance	Active	eService Production	creator		27905-45-9	8:2 Fluorotelomer acrylate,  2-Propenoic acid, 3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-heptadecafluorodecyl ester		D												
+Substance	SUB-900000000279		SUB-900000000279		Substance	Active	eService Production	creator		27942-27-4	20-(4-Nonylphenoxy)-3,6,9,12,15,18-hexaoxaicosan-1-ol		D												
+Substance	SUB-900000000280		SUB-900000000280		Substance	Active	eService Production	creator		28159-98-0	Cybutryne; N'-tert-butyl-N-cyclopropyl-6-(methylthio)-1,3,5-triazine-2,4-diamine		D/P												
+Substance	SUB-900000000281		SUB-900000000281		Substance	Active	eService Production	creator		2832-40-8	C.I. Disperse Yellow 3		D												
+Substance	SUB-900000000282		SUB-900000000282		Substance	Active	eService Production	creator		28472-97-1	Diisodecyl azelate		D												
+Substance	SUB-900000000283		SUB-900000000283		Substance	Active	eService Production	creator		28519-02-0	Benzenesulfonic acid,dodecyl(sulfophenoxy)-, sodium salt (1:2)		D												
+Substance	SUB-900000000284		SUB-900000000284		Substance	Active	eService Production	creator		2868-75-9	C.I. Direct Red 7, C.I.24100		D/P												
+Substance	SUB-900000000285		SUB-900000000285		Substance	Active	eService Production	creator		2868-76-0	C.I. Direct Orange 7, C.I.23380		D/P												
+Substance	SUB-900000000286		SUB-900000000286		Substance	Active	eService Production	creator		28777-98-2	Succinic anhydride, octadecenyl- 		D												
+Substance	SUB-900000000287		SUB-900000000287		Substance	Active	eService Production	creator		2893-78-9	Troclosene sodium; Sodium dichloroisocyanurate dihydrate		D/P												
+Substance	SUB-900000000288		SUB-900000000288		Substance	Active	eService Production	creator		29151-25-5	2-bromo-1,3,3,3-tetrafluoropropane		P												
+Substance	SUB-900000000289		SUB-900000000289		Substance	Active	eService Production	creator		29457-73-6	Heptanoic acid, 2,2,3,3,4,4,5,5,6,7,7,7-dodecafluoro-6-(trifluoromethyl)-, potassium salt(1:1)		D												
+Substance	SUB-900000000290		SUB-900000000290		Substance	Active	eService Production	creator		2949-11-3	Dimercury(I) oxalate		D/P												
+Substance	SUB-900000000291		SUB-900000000291		Substance	Active	eService Production	creator		29761-21-5	Isodecyl diphenyl phosphate		D												
+Substance	SUB-900000000292		SUB-900000000292		Substance	Active	eService Production	creator		30046-31-2	Tetradecane,1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12- pentacosafluoro-14-iodo-		D												
+Substance	SUB-900000000293		SUB-900000000293		Substance	Active	eService Production	creator		3026-81-1	2,2'-((Dibutylstannylene)bis(thio))diethanol		D/P												
+Substance	SUB-900000000294		SUB-900000000294		Substance	Active	eService Production	creator		30389-25-4	1-Dodecene,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,12-heneicosafluoro-		D												
+Substance	SUB-900000000295		SUB-900000000295		Substance	Active	eService Production	creator		3064-70-8	Bis(trichloromethyl) sulphone		D/P												
+Substance	SUB-900000000296		SUB-900000000296		Substance	Active	eService Production	creator		306-80-9	1,1,2,2-tetrabromo-1-fluoro-ethane		P												
+Substance	SUB-900000000297		SUB-900000000297		Substance	Active	eService Production	creator		307-35-7	Perfluoro-1-octanesulfonyl fluoride		P												
+Substance	SUB-900000000298		SUB-900000000298		Substance	Active	eService Production	creator		307-43-7	Decane, 1-bromo-1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-heneicosafluoro-		D												
+Substance	SUB-900000000299		SUB-900000000299		Substance	Active	eService Production	creator		307-50-6	Undecane, 1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11-tricosafluoro-11-iodo-		D												
+Substance	SUB-900000000300		SUB-900000000300		Substance	Active	eService Production	creator		307-60-8	Dodecane, 1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12-pentacosafluoro-12-iodo-		D												
+Substance	SUB-900000000301		SUB-900000000301		Substance	Active	eService Production	creator		307-63-1	Tetradecane, 1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,14,14-nonacosafluoro-14-iodo-		D												
+Substance	SUB-900000000302		SUB-900000000302		Substance	Active	eService Production	creator		30784-30-6	p-(1,1-Dimethylheptyl)phenol		D												
+Substance	SUB-900000000303		SUB-900000000303		Substance	Active	eService Production	creator		308069-39-8	Silver phosphate glass		D												
+Substance	SUB-900000000304		SUB-900000000304		Substance	Active	eService Production	creator		308074-50-2	Quaternary ammonium iodides		D/P												
+Substance	SUB-900000000305		SUB-900000000305		Substance	Active	eService Production	creator		31075-24-8	N,N,N',N'-Tetramethylethylenediaminebis(2-chloroethyl)ether copolymer		D/P												
+Substance	SUB-900000000306		SUB-900000000306		Substance	Active	eService Production	creator		3108-24-5	Ethylperfluorooctanoate		P												
+Substance	SUB-900000000307		SUB-900000000307		Substance	Active	eService Production	creator		3108-42-7	Nonadecafluorodecanoic acid, ammonium salt		D												SVHC
+Substance	SUB-900000000308		SUB-900000000308		Substance	Active	eService Production	creator		3124-01-4	Diplumbane, hexaphenyl-		D/P												
+Substance	SUB-900000000309		SUB-900000000309		Substance	Active	eService Production	creator		312600-89-8	Cu-HDO; Bis(N-cyclohexyl- diazenium-dioxy)-copper); Bis[1-cyclohexyl-1,2-di(hydroxy-.kappa.O)diazeniumato(2-)]-copper		D/P												
+Substance	SUB-900000000310		SUB-900000000310		Substance	Active	eService Production	creator		3141-12-6	Triethyl arsenite		D												
+Substance	SUB-900000000311		SUB-900000000311		Substance	Active	eService Production	creator		3147-75-9	Phenol, 2-(2H-benzotriazol-2-yl)-4-(1,1,3,3-tetramethylbutyl)- (UV 329)		D												
+Substance	SUB-900000000312		SUB-900000000312		Substance	Active	eService Production	creator		3198-04-7	Sodium 4-chloromercuriobenzoate		D/P												
+Substance	SUB-900000000313		SUB-900000000313		Substance	Active	eService Production	creator		321318-71-2	2-Propenoic acid, 2-methyl-, methyl ester, telomere with 1-dodecanethiol, 2-ethylhexyl 2-propenoate, 3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-heptadecafluorodecyl 2-propenoate and 2-Propenoic acid		D												
+Substance	SUB-900000000314		SUB-900000000314		Substance	Active	eService Production	creator		32289-58-0	Poly(hexamethylenebiguanide)hydrochloride		D/P												
+Substance	SUB-900000000315		SUB-900000000315		Substance	Active	eService Production	creator		32426-11-2	Decyldimethyloctylammonium chloride		D/P												
+Substance	SUB-900000000316		SUB-900000000316		Substance	Active	eService Production	creator		3248-61-1	Dodecane, 1,1,1,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12, 12-tetracosafluoro-12-iodo-2-(trifluoromethyl)-		D												
+Substance	SUB-900000000317		SUB-900000000317		Substance	Active	eService Production	creator		3248-63-3	Tetradecane, 1,1,1,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,14,14-octacosafluoro-14-iodo-2-(trifluoromethyl)-		D												
+Substance	SUB-900000000318		SUB-900000000318		Substance	Active	eService Production	creator		32588-76-4	N,N'-ethylenebis(3,4,5,6-tetrabromophthalimide)		D												
+Substance	SUB-900000000319		SUB-900000000319		Substance	Active	eService Production	creator		32718-18-6	Bromochloro-5,5-dimethylimidazolidine-2,4-dione		D/P												
+Substance	SUB-900000000320		SUB-900000000320		Substance	Active	eService Production	creator		3282-24-4	2''-Bromo-[1,1';4',1'']terphenyl		D												
+Substance	SUB-900000000321		SUB-900000000321		Substance	Active	eService Production	creator		3319-31-1	tris(2-ethylhexyl)-benzene-1,2,4-tricarboxylate		D												
+Substance	SUB-900000000322		SUB-900000000322		Substance	Active	eService Production	creator		33363-87-0	C.I. Direct Brown 25, C.I.36030		D/P												
+Substance	SUB-900000000323		SUB-900000000323		Substance	Active	eService Production	creator		335-66-0	Pentadecafluorooctyl fluoride		P												
+Substance	SUB-900000000324		SUB-900000000324		Substance	Active	eService Production	creator		335-76-2	Nonadecafluorodecanoic acid (PFDA)		D												SVHC
+Substance	SUB-900000000325		SUB-900000000325		Substance	Active	eService Production	creator		335-79-5	Pentadecane, 1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,14,14,15,15-hentriacontafluoro-15-iodo		D												
+Substance	SUB-900000000326		SUB-900000000326		Substance	Active	eService Production	creator		335-93-3	Silver salt of PFOA 		P												
+Substance	SUB-900000000327		SUB-900000000327		Substance	Active	eService Production	creator		3380-30-1	5-Chloro-2-(4-chlorophenoxy)-phenol (DCPP)		D/P												
+Substance	SUB-900000000328		SUB-900000000328		Substance	Active	eService Production	creator		3380-34-5	Triclosan; 2,4,4-Trichloro-2-hydroxy diphenyl ether; 5-Chloro-2-(2,4-dichlorophenoxy)phenol		D/P												
+Substance	SUB-900000000329		SUB-900000000329		Substance	Active	eService Production	creator		34123-59-6	Isoproturon; 3-(4-Isopropylphenyl)-1,1-dimethylurea		D/P												
+Substance	SUB-900000000330		SUB-900000000330		Substance	Active	eService Production	creator		34166-38-6	p-Nonylphenol hexaethoxylate		D												
+Substance	SUB-900000000331		SUB-900000000331		Substance	Active	eService Production	creator		3468-63-1	D&C Orange No. 17		D												
+Substance	SUB-900000000332		SUB-900000000332		Substance	Active	eService Production	creator		35194-78-6	Heptabromobiphenyl		P												
+Substance	SUB-900000000333		SUB-900000000333		Substance	Active	eService Production	creator		353-93-5	1,1,1,2-tetrabromo-2-fluoro-ethane		P												
+Substance	SUB-900000000334		SUB-900000000334		Substance	Active	eService Production	creator		353-97-9	1,1,2-tribromo-1,2-difluoroethane		P												
+Substance	SUB-900000000335		SUB-900000000335		Substance	Active	eService Production	creator		355-46-4	Perfluorohexane-1-sulphonic acid		D												
+Substance	SUB-900000000336		SUB-900000000336		Substance	Active	eService Production	creator		35554-44-0	Imazalil; 1-[2-(allyloxy)-2-(2,4-dichlorophenyl)ethyl]-1H-imidazole		D/P												
+Substance	SUB-900000000337		SUB-900000000337		Substance	Active	eService Production	creator		35605-76-6	Hexanoic acid, 2,3,3,4,4,5,5,6,6,6-decafluoro-2-(1,1,2,2,2-pentafluoroethyl)-		D												
+Substance	SUB-900000000338		SUB-900000000338		Substance	Active	eService Production	creator		35691-65-7	2-Bromo-2-(bromomethyl)pentanedinitrile		D/P												
+Substance	SUB-900000000339		SUB-900000000339		Substance	Active	eService Production	creator		3586-55-8	(ethylenedioxy)dimethanol/ 1,6-Dihydroxy-2,5-dioxyhexane		D/P												
+Substance	SUB-900000000340		SUB-900000000340		Substance	Active	eService Production	creator		3626-23-1	C.I. Direct Black 29, C.I.22580		D/P												
+Substance	SUB-900000000341		SUB-900000000341		Substance	Active	eService Production	creator		3626-29-7	C.I. Direct Brown 101, C.I.31740		D/P												
+Substance	SUB-900000000342		SUB-900000000342		Substance	Active	eService Production	creator		36312-81-9	Undecane, octachloro-		P												
+Substance	SUB-900000000343		SUB-900000000343		Substance	Active	eService Production	creator		36437-37-3	Phenol, 2-(2H-benzotriazol-2-yl)-4-(1,1-dimethylethyl)-6-(1-methylpropyl)-  (UV 350)		D												SVHC
+Substance	SUB-900000000344		SUB-900000000344		Substance	Active	eService Production	creator		36443-68-2	Benzenepropanoic acid, 3-(1,1-dimethylethyl)-4-hydroxy-5-methyl-, 1,2-ethanediylbis(oxy-2,1-ethanediyl) ester		D												
+Substance	SUB-900000000345		SUB-900000000345		Substance	Active	eService Production	creator		3687-80-7	C.I. Direct Red 26, C.I.29190		D/P												
+Substance	SUB-900000000346		SUB-900000000346		Substance	Active	eService Production	creator		36897-37-7	Nickel dihydroxide hydrate		D												
+Substance	SUB-900000000347		SUB-900000000347		Substance	Active	eService Production	creator		3696-28-4	Dipyrithione		D/P												
+Substance	SUB-900000000348		SUB-900000000348		Substance	Active	eService Production	creator		37139-99-4	Benzyldimethyloleylammonium chloride		D/P												
+Substance	SUB-900000000349		SUB-900000000349		Substance	Active	eService Production	creator		37211-05-5	Nickel chloride		D												
+Substance	SUB-900000000350		SUB-900000000350		Substance	Active	eService Production	creator		37372-50-2	C.I. Direct Black 154 		D/P												
+Substance	SUB-900000000351		SUB-900000000351		Substance	Active	eService Production	creator		374572-91-5	Oligo(2-(2-ethoxy)ethoxyethylguanidinium chloride)		D/P												
+Substance	SUB-900000000352		SUB-900000000352		Substance	Active	eService Production	creator		375-73-5	1,1,2,2,3,3,4,4,4-nonafluorobutane-1-sulphonic acid (PFBS)		D												
+Substance	SUB-900000000353		SUB-900000000353		Substance	Active	eService Production	creator		375-95-1	Perfluorononan-1-oic-acid		D												SVHC
+Substance	SUB-900000000354		SUB-900000000354		Substance	Active	eService Production	creator		376-04-5	Tridecane, 1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13-heptacosafluoro-13-iodo-		D												
+Substance	SUB-900000000355		SUB-900000000355		Substance	Active	eService Production	creator		376-27-2	Methylperfluorooctanoate		P												
+Substance	SUB-900000000356		SUB-900000000356		Substance	Active	eService Production	creator		3784-03-0	Sodium 2,4,6-trichlorophenolate		D/P												
+Substance	SUB-900000000357		SUB-900000000357		Substance	Active	eService Production	creator		3830-45-3	Nonadecafluorodecanoic acid, sodium salt		D												SVHC
+Substance	SUB-900000000358		SUB-900000000358		Substance	Active	eService Production	creator		3844-45-9	Benzenemethanaminium, N-ethyl-N-[4-[[4-[ethyl[(3-sulfophenyl)methyl]amino]phenyl](2-sulfophenyl)methylene]-2,5-cyclohexadien-1-ylidene]-3-sulfo-, hydroxide, inner salt, disodium salt		D												
+Substance	SUB-900000000359		SUB-900000000359		Substance	Active	eService Production	creator		3871-99-6	Perfluorohexane-1-sulphonic acid, potassium salt		D												
+Substance	SUB-900000000360		SUB-900000000360		Substance	Active	eService Production	creator		3896-11-5	5-Chlorobenzotriazole, 2-(2-Hydroxy-3-tert-butyl-5-methylphenyl)-   (UV-326)		D												
+Substance	SUB-900000000361		SUB-900000000361		Substance	Active	eService Production	creator		39239-77-5	1-Tetradecanol,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,14,14,14-pentacosafluoro-		D												
+Substance	SUB-900000000362		SUB-900000000362		Substance	Active	eService Production	creator		39635-79-5	4,4'-sulphonylbis[2,6-dibromophenol],Tetrabromobisphenol S, (TBBPS)		D												
+Substance	SUB-900000000363		SUB-900000000363		Substance	Active	eService Production	creator		398477-47-9	Silver-zinc-aluminium-boronphosphate glass; Glass oxide, silver- and zinc-containing		D/P												
+Substance	SUB-900000000364		SUB-900000000364		Substance	Active	eService Production	creator		4080-31-3	Methenamine 3-chloroallylochloride		D/P												
+Substance	SUB-900000000365		SUB-900000000365		Substance	Active	eService Production	creator		4149-60-4	Ammonium salts of perfluorononan-1-oic-acid 		D												SVHC
+Substance	SUB-900000000366		SUB-900000000366		Substance	Active	eService Production	creator		41591-87-1	Dimethyltetradecyl[3-(trimethoxysilyl)-propyl]ammonium chloride		D												
+Substance	SUB-900000000367		SUB-900000000367		Substance	Active	eService Production	creator		4198-19-0	C.I. Direct Blue 10, C.I.24340		D/P												
+Substance	SUB-900000000368		SUB-900000000368		Substance	Active	eService Production	creator		420-88-2	1,1,2-tribromo-1-fluoroethane		P												
+Substance	SUB-900000000369		SUB-900000000369		Substance	Active	eService Production	creator		420-89-3	1-bromo-1,1-difluoro-propane		P												
+Substance	SUB-900000000370		SUB-900000000370		Substance	Active	eService Production	creator		420-98-4	1-bromo-2,2-difluoro-propane		P												
+Substance	SUB-900000000371		SUB-900000000371		Substance	Active	eService Production	creator		421-90-9	1,2,2-Tribromo-3,3,3-trifluoropropane		P												
+Substance	SUB-900000000372		SUB-900000000372		Substance	Active	eService Production	creator		422-01-5	1-bromo-1,1,2,2,2-pentafluoro-propane		P												
+Substance	SUB-900000000373		SUB-900000000373		Substance	Active	eService Production	creator		4221-80-1	Benzoic acid, 3,5-bis(1,1-dimethylethyl)-4-hydroxy-, 2,4-bis(1,1-dimethylethyl)phenyl ester		D												
+Substance	SUB-900000000374		SUB-900000000374		Substance	Active	eService Production	creator		423-62-1	Decane, 1,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10-heneicosafluoro-10-iodo-		D												
+Substance	SUB-900000000375		SUB-900000000375		Substance	Active	eService Production	creator		4259-15-8	zinc bis[O,O-bis(2-ethylhexyl)] bis(dithiophosphate)		D												
+Substance	SUB-900000000376		SUB-900000000376		Substance	Active	eService Production	creator		4299-07-4	2-n-butyl-benzo[d]isothiazol-3-one		D												
+Substance	SUB-900000000377		SUB-900000000377		Substance	Active	eService Production	creator		430-87-5	2-bromo-1,1-difluoro-propane		P												
+Substance	SUB-900000000378		SUB-900000000378		Substance	Active	eService Production	creator		43121-43-3	Triadimefon; 1-(4-chlorophenoxy)-3,3-dimethyl-1-(1,2,4-triazol-1-yl)butanone		D												
+Substance	SUB-900000000379		SUB-900000000379		Substance	Active	eService Production	creator		4335-09-5	C.I. Direct Green 6, C.I.30295		P												
+Substance	SUB-900000000380		SUB-900000000380		Substance	Active	eService Production	creator		446255-22-7	2,2',3,3',4,5',6-heptabromodiphenyl ether		P												
+Substance	SUB-900000000381		SUB-900000000381		Substance	Active	eService Production	creator		4477-79-6	C.I. Solvent Red 26, C.I.26120		D/P												
+Substance	SUB-900000000382		SUB-900000000382		Substance	Active	eService Production	creator		45285-51-6	Perfluorooctanoate (conjugate base of the free acid)		D												
+Substance	SUB-900000000383		SUB-900000000383		Substance	Active	eService Production	creator		45298-90-6	Perfluoroctane sulfonate anion		P												
+Substance	SUB-900000000384		SUB-900000000384		Substance	Active	eService Production	creator		453-00-9	1,2-Dibromo-3-fluoropropane		P												
+Substance	SUB-900000000385		SUB-900000000385		Substance	Active	eService Production	creator		460-67-3	3-bromo-1,1,1,3-tetrafluoropropane		P												
+Substance	SUB-900000000386		SUB-900000000386		Substance	Active	eService Production	creator		460-86-6	1,3-Dibromo-1,1,3,3-tetrafluoropropane		P												
+Substance	SUB-900000000387		SUB-900000000387		Substance	Active	eService Production	creator		460-88-8	1-bromo-1,1,3,3,3-pentafluoro-propane		P												
+Substance	SUB-900000000388		SUB-900000000388		Substance	Active	eService Production	creator		461-49-4	3-bromo-1,1-difluoro-propane		P												
+Substance	SUB-900000000389		SUB-900000000389		Substance	Active	eService Production	creator		4623-91-0	C.I. Direct Brown 51, C.I.31710		D/P												
+Substance	SUB-900000000390		SUB-900000000390		Substance	Active	eService Production	creator		4645-07-2	C.I. Solvent Yellow 72		D/P												
+Substance	SUB-900000000391		SUB-900000000391		Substance	Active	eService Production	creator		4719-04-4	2,2',2''-(Hexahydro-1,3,5-triazine-1,3,5-triyl)triethanol		D/P												
+Substance	SUB-900000000392		SUB-900000000392		Substance	Active	eService Production	creator		4731-77-5	Dibutyltin dioctanoate		D/P												
+Substance	SUB-900000000393		SUB-900000000393		Substance	Active	eService Production	creator		4736-49-6	rel-(1R, 2S, 5R, 6S, 9R, 10S)-1,2,5,6,9,10-Hexabromocyclododecane		D/P												
+Substance	SUB-900000000394		SUB-900000000394		Substance	Active	eService Production	creator		49690-94-0	Tribromodiphenyl ether		P												
+Substance	SUB-900000000395		SUB-900000000395		Substance	Active	eService Production	creator		4980-53-4	2-Propenoic acid, 2-methyl-,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13,14,14,15,15,16,16,16-nonacosafluorohexadecylester		D												
+Substance	SUB-900000000396		SUB-900000000396		Substance	Active	eService Production	creator		501098-09-5	Siloxanes and Silicones, di-Me, mono[3-[(2-methyl-1-oxo-2-propenyl)oxy]propyl group]-terminated, polymers with 3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,10-heptadecafluoro-1-decanol- and 2-hydroxyethyl acrylate-blocked 2,4-TDI-trimethylolpropane polymer		D												
+Substance	SUB-900000000397		SUB-900000000397		Substance	Active	eService Production	creator		507-63-1	Perfluorooctyl iodide		D												
+Substance	SUB-900000000398		SUB-900000000398		Substance	Active	eService Production	creator		50926-11-9	Indium tin oxide (ITO)		D												
+Substance	SUB-900000000399		SUB-900000000399		Substance	Active	eService Production	creator		51085-52-0	Benzenamine, 2-methyl-5-nitro-, monohydrochloride 		D												
+Substance	SUB-900000000400		SUB-900000000400		Substance	Active	eService Production	creator		51229-78-8	DOWICIL* 150 PRESERVATIVE; DOWICIL* 200 PRESERVATIVE		D/P												

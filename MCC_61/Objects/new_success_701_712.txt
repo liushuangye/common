@@ -1,0 +1,13 @@
+Type	Name	Rev	New Name	New Rev	Policy	State	Vault	Owner	description	CAS Number	Substance Name 	Originator	GWM GADSL	GWM From-To	GWM EC name	GWM EC number	GWM IUPAC name	GWM Molecular Formula	GWM Ref CAS name	GWM Ref CAS number	GWM Ref EC name	GWM Ref EC number	GWM Ref IUPAC name	GWM Reference Substance	GWM REACH
+Substance	SUB-900000000701		SUB-900000000701		Substance	Active	eService Production	creator		96-09-3	Styrene oxide (Epoxy styrene)		D												
+Substance	SUB-900000000702		SUB-900000000702		Substance	Active	eService Production	creator		96-69-5	6,6'-di-tert-butyl-4,4'-thiodi-m-cresol		D												
+Substance	SUB-900000000703		SUB-900000000703		Substance	Active	eService Production	creator		96-76-4	Phenol, 2,4-bis(1,1-dimethylethyl)-		D												
+Substance	SUB-900000000704		SUB-900000000704		Substance	Active	eService Production	creator		97199-27-4	C.I. Acid Brown 415		D/P												
+Substance	SUB-900000000705		SUB-900000000705		Substance	Active	eService Production	creator		97-23-4	Dichlorophene; dichlorophen		D/P												
+Substance	SUB-900000000706		SUB-900000000706		Substance	Active	eService Production	creator		97416-84-7	1,1'-(isopropylidene)bis[3,5-dibromo-4-(2,3-dibromo-2-methylpropoxy)benzene]		D												
+Substance	SUB-900000000707		SUB-900000000707		Substance	Active	eService Production	creator		97553-43-0	Paraffins (petroleum), normal C>10, chloro		P												
+Substance	SUB-900000000708		SUB-900000000708		Substance	Active	eService Production	creator		97659-46-6	Alkanes, C10-26, chloro		P												
+Substance	SUB-900000000709		SUB-900000000709		Substance	Active	eService Production	creator		98241-25-9	Ethanaminium, N,N,N-triethyl-,2,2,3,3,4,4,5,5,6,6,7,7,8,8,8-pentadecafluorooctanoate (1:1)		D												
+Substance	SUB-900000000710		SUB-900000000710		Substance	Active	eService Production	creator		98-82-8	Cumene		D												
+Substance	SUB-900000000711		SUB-900000000711		Substance	Active	eService Production	creator		98-83-9	alpha-Methylstyrene		D												
+Substance	SUB-900000000712		SUB-900000000712		Substance	Active	eService Production	creator		992-59-6	C.I. Direct Red 2, C.I.23500		D/P												
