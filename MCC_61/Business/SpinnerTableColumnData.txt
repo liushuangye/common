@@ -1,0 +1,2 @@
+Table Name	Column Name	Column Label	Col Description	Expression Type (bus or "" / rel)	Expression	Href	Setting Names (use "|" delim)	Setting Values (use "|" delim)	Users (use "|" delim)	Alt	Range	Update	SortType (alpha / numeric / other / none or "")
+ENCEBOMIndentedSummary	Weight	Weight		businessobject	$<attribute[attribute_Weight].value>		Admin Type | Editable | Input Type | Registered Suite | Update Function | Update Program	attribute_Weight | true | textbox | EngineeringCentral | updateWeight | emxPart	all				none

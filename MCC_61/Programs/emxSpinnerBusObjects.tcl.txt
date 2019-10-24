@@ -51,12 +51,12 @@
 tcl;
 
 eval {
-   if {[info host] == \"mostermant43\" } {
-      source \"c:/Program Files/TclPro1.3/win32-ix86/bin/prodebug.tcl\"
-      set cmd \"debugger_eval\"
+   if {[info host] == "mostermant43" } {
+      source "c:/Program Files/TclPro1.3/win32-ix86/bin/prodebug.tcl"
+      set cmd "debugger_eval"
       set xxx [debugger_init]
    } else {
-      set cmd \"eval\"
+      set cmd "eval"
    }
 }
 $cmd {
@@ -68,17 +68,17 @@ $cmd {
    set sAllFiles [mql get env BUSFILELIST]
 
 #  ********************** USER DEFINED VARIABLES*******************************
-   if {$bModIfExists == \"\"} {
-      set bModIfExists \"FALSE\" ;#TRUE or FALSE - modify bus object if it exists
+   if {$bModIfExists == ""} {
+      set bModIfExists "FALSE" ;#TRUE or FALSE - modify bus object if it exists
    }
-   if {$bTriggerAdd == \"\"} {
-      set bTriggerAdd \"OFF\" ;# ON or OFF - turn trigger on
+   if {$bTriggerAdd == ""} {
+      set bTriggerAdd "OFF" ;# ON or OFF - turn trigger on
    }
-   if {$bTriggerMod == \"\"} {
-      set bTriggerMod \"OFF\" ;# ON or OFF - turn trigger on
+   if {$bTriggerMod == ""} {
+      set bTriggerMod "OFF" ;# ON or OFF - turn trigger on
    }
-   if {$bTriggerDel == \"\"} {
-      set bTriggerDel \"OFF\" ;# ON or OFF - turn trigger on
+   if {$bTriggerDel == ""} {
+      set bTriggerDel "OFF" ;# ON or OFF - turn trigger on
    }
 #  ****************************************************************************
 
@@ -89,17 +89,17 @@ $cmd {
    
 # Scan Mode
    set bScan [mql get env SPINNERSCANMODE]
-   if {$bScan != \"TRUE\"} {set bScan FALSE}
-   if {$bScan} {set sDate1 \"SCAN\"}
+   if {$bScan != "TRUE"} {set bScan FALSE}
+   if {$bScan} {set sDate1 "SCAN"}
 
    global iLogFileId 
    global iErrTot iAddTotal iModTotal iDelTotal iChgNameTotal iPolicyTotal iOwnerTotal iVaultTotal iPromoteTotal iDemoteTotal iRevChainTotal
    
 ##  this is to set the path
-   if {$sAllFiles == \"\"} {set sAllFiles [ glob -nocomplain \"./Objects/*.xls\" ]}
-   if {$sAllFiles == \"./Objects/0\"} {set sAllFiles \"\"}
-   if {$sAllFiles == \"\"} {
-      puts -nonewline \"\n*** No data files of format '\[bus object name\].xls' found ***\"
+   if {$sAllFiles == ""} {set sAllFiles [ glob -nocomplain "./Objects/*.xls" ]}
+   if {$sAllFiles == "./Objects/0"} {set sAllFiles ""}
+   if {$sAllFiles == ""} {
+      puts -nonewline "\n*** No data files of format '\[bus object name\].xls' found ***"
    }
    
 #***************************************************************************
@@ -122,23 +122,23 @@ $cmd {
       set iMin  [expr $iMin - ($iHour * 60 )]
       set iDay  [expr $iHour / 24 ]
       set iHour [expr $iHour - ($iDay * 24 )]
-      set iSec  [format \"%0.2i\" $iSec]
-      set iMin  [format \"%0.2i\" $iMin]
+      set iSec  [format "%0.2i" $iSec]
+      set iMin  [format "%0.2i" $iMin]
       
-      if {$iAddTotal > 0} {puts $iLogFileId \"#     Number of Objects created:         $iAddTotal\"}
-      if {$iModTotal > 0} {puts $iLogFileId \"#     Number of Objects modified:        $iModTotal\"}
-      if {$iDelTotal > 0} {puts $iLogFileId \"#     Number of Objects deleted:        $iDelTotal\"}
-      if {$iChgNameTotal > 0} {puts $iLogFileId \"#     Number of Objects change name:     $iChgNameTotal\"} 
-      if {$iOwnerTotal > 0} {puts $iLogFileId \"#     Number of Objects change owner:    $iOwnerTotal\"}
-      if {$iPolicyTotal > 0} {puts $iLogFileId \"#     Number of Objects change policy:   $iPolicyTotal\"}
-      if {$iVaultTotal > 0} {puts $iLogFileId \"#     Number of Objects change vault:    $iVaultTotal\"}
-      if {$iPromoteTotal > 0} {puts $iLogFileId \"#     Number of Objects promoted:        $iPromoteTotal\"} 
-      if {$iDemoteTotal > 0} {puts $iLogFileId \"#     Number of Objects demoted:         $iDemoteTotal\"}
-      if {$iRevChainTotal > 0} {puts $iLogFileId \"#     Number of Objects revision chained:         $iRevChainTotal\"}
-      if {$iErrTot > 0} {puts $iLogFileId \"#     Number of Errors:                  $iErrTot\"}
-      if {[expr $iAddTotal + $iModTotal + $iDelTotal + $iErrTot] > 0} {puts $iLogFileId \"#     Total time for load:               $iDay $iHour:$iMin:$iSec\"}
+      if {$iAddTotal > 0} {puts $iLogFileId "#     Number of Objects created:         $iAddTotal"}
+      if {$iModTotal > 0} {puts $iLogFileId "#     Number of Objects modified:        $iModTotal"}
+      if {$iDelTotal > 0} {puts $iLogFileId "#     Number of Objects deleted:        $iDelTotal"}
+      if {$iChgNameTotal > 0} {puts $iLogFileId "#     Number of Objects change name:     $iChgNameTotal"} 
+      if {$iOwnerTotal > 0} {puts $iLogFileId "#     Number of Objects change owner:    $iOwnerTotal"}
+      if {$iPolicyTotal > 0} {puts $iLogFileId "#     Number of Objects change policy:   $iPolicyTotal"}
+      if {$iVaultTotal > 0} {puts $iLogFileId "#     Number of Objects change vault:    $iVaultTotal"}
+      if {$iPromoteTotal > 0} {puts $iLogFileId "#     Number of Objects promoted:        $iPromoteTotal"} 
+      if {$iDemoteTotal > 0} {puts $iLogFileId "#     Number of Objects demoted:         $iDemoteTotal"}
+      if {$iRevChainTotal > 0} {puts $iLogFileId "#     Number of Objects revision chained:         $iRevChainTotal"}
+      if {$iErrTot > 0} {puts $iLogFileId "#     Number of Errors:                  $iErrTot"}
+      if {[expr $iAddTotal + $iModTotal + $iDelTotal + $iErrTot] > 0} {puts $iLogFileId "#     Total time for load:               $iDay $iHour:$iMin:$iSec"}
       
-      if {[lsearch $sAllFiles $sCurFile] == [expr [llength $sAllFiles] - 1]} {puts $iLogFileId \"\"}
+      if {[lsearch $sAllFiles $sCurFile] == [expr [llength $sAllFiles] - 1]} {puts $iLogFileId ""}
    }
 
 #***************************************************************************
@@ -148,27 +148,27 @@ $cmd {
 # Returns:  Attributes.
 #***************************************************************************
    proc pCheckAttrHdr { llName llValue } {
-      set pCombo \"\"
-      if {$llName != \"\" && $llValue != \"\" } {
+      set pCombo ""
+      if {$llName != "" && $llValue != "" } {
          foreach lName $llName lValue $llValue {
-            if {[string range $lValue 0 0] == \"\042\" && [string range $lValue end end] == \"\042\" && [string length $lValue] > 2} {
-            	 if {[string first \",\" $lValue] > -1 || [string first \"\042\042\" $lValue] > -1} {
+            if {[string range $lValue 0 0] == "\042" && [string range $lValue end end] == "\042" && [string length $lValue] > 2} {
+            	 if {[string first "," $lValue] > -1 || [string first "\042\042" $lValue] > -1} {
             	    set iLast [expr [string length $lValue] -2]
             	    set lValue [string range $lValue 1 $iLast]
-            	    regsub -all \"\042\042\" $lValue \"\042\" lValue
+            	    regsub -all "\042\042" $lValue "\042" lValue
             	 }
             }
-            regsub -all \"\134$\" $lValue \"\134\134\$\" lValue
-            regsub -all \"\134{\" $lValue \"\134\134\173\" lValue
-            regsub -all \"\134}\" $lValue \"\134\134\175\" lValue
-            regsub -all \"\134\133\" $lValue \"\134\134\133\" lValue
-            regsub -all \"\134\135\" $lValue \"\134\134\135\" lValue
-            regsub -all \"\042\" $lValue \"\134\042\" lValue
-            regsub -all \"'\" $lValue \"\047\" lValue
-            regsub -all \"<ESC>\" $lValue \"\134\" lValue
-            regsub -all \"<SPACE>\" $lValue \" \" lValue
-            regsub -all \"<NULL>\" $lValue \"\" lValue
-            append pCombo \" \\"$lName\\" \\"$lValue\\"\"
+            regsub -all "\134$" $lValue "\134\134\$" lValue
+            regsub -all "\134{" $lValue "\134\134\173" lValue
+            regsub -all "\134}" $lValue "\134\134\175" lValue
+            regsub -all "\134\133" $lValue "\134\134\133" lValue
+            regsub -all "\134\135" $lValue "\134\134\135" lValue
+            regsub -all "\042" $lValue "\134\042" lValue
+            regsub -all "'" $lValue "\047" lValue
+            regsub -all "<ESC>" $lValue "\134" lValue
+            regsub -all "<SPACE>" $lValue " " lValue
+            regsub -all "<NULL>" $lValue "" lValue
+            append pCombo " \"$lName\" \"$lValue\""
          }
       }
       return $pCombo
@@ -181,13 +181,13 @@ $cmd {
 # @Returns:       
 #**************************************************************************
    proc pGetBasic { sTypeOrOid sName sRev args } {
-      if { $args == \"\" } { return \"\" }
-      if { $sName == \"\" } {
+      if { $args == "" } { return "" }
+      if { $sName == "" } {
          set sOid $sTypeOrOid
       } else {
          set sOid [ list $sTypeOrOid $sName $sRev ]
       }
-      set sValues \"\"
+      set sValues ""
       if { [ llength $args ] == 1 } {
          set sValues [ eval mql print bus $sOid select $args dump ]
       } else {
@@ -217,11 +217,11 @@ $cmd {
       set sBusType [ lindex $lData 2 ]
       set sBusOid [ lindex $lData 3 ]
       
-      if {[catch {set lPolStates [ split [ mql print pol \"$sBusPol\" select state.name dump | ] | ]} sMsg] != 0} {
-         puts $iLogFileId \"\n$lBus: error - cannot promote business object as it does not exist\"
+      if {[catch {set lPolStates [ split [ mql print pol "$sBusPol" select state.name dump | ] | ]} sMsg] != 0} {
+         puts $iLogFileId "\n$lBus: error - cannot promote business object as it does not exist"
          if {$bSpinnerAgent} {
             set iLogFileErr [open $sLogFileError a+]
-            puts $iLogFileErr \"$lBus: error - cannot promote business object as it does not exist\"
+            puts $iLogFileErr "$lBus: error - cannot promote business object as it does not exist"
             close $iLogFileErr
          }
          set bError TRUE
@@ -232,10 +232,10 @@ $cmd {
          set iSt [ lsearch $lPolStates $sTargetSt ]
    
          if { $iSt == -1 } {
-            puts $iLogFileId \"\n$lBus: error State \\"$sTargetSt\\" does not exist\"
+            puts $iLogFileId "\n$lBus: error State \"$sTargetSt\" does not exist"
             if {$bSpinnerAgent} {
                set iLogFileErr [open $sLogFileError a+]
-               puts $iLogFileErr \"$lBus: error State \\"$sTargetSt\\" does not exist\"
+               puts $iLogFileErr "$lBus: error State \"$sTargetSt\" does not exist"
                close $iLogFileErr
             }
             set bError TRUE
@@ -244,35 +244,35 @@ $cmd {
          } elseif {$iSt != $iBusSt} {
 # 12/21/2006 - Set state with policy change instead of promote/demote - MJO
             if {[catch {
-               set sTempPol \"$sBusType\_$sTargetSt\_$iUniqueID\"
+               set sTempPol "$sBusType\_$sTargetSt\_$iUniqueID"
                if {[lsearch $lsTempPolicy $sTempPol] < 0} {
-                  set sCmd \"mql add policy \\"$sTempPol\\" state \\"$sTargetSt\\" type \\"$sBusType\\" hidden\"
+                  set sCmd "mql add policy \"$sTempPol\" state \"$sTargetSt\" type \"$sBusType\" hidden"
 # 08/07/2008 - Fix for 357699 - Multiple formats for CAD Objects
-                  set slsFormat [mql print policy \"$sBusPol\" select format dump |]
-                  if {$slsFormat != \"\"} {
+                  set slsFormat [mql print policy "$sBusPol" select format dump |]
+                  if {$slsFormat != ""} {
                      set lsFormat [split $slsFormat |]
                      foreach sFormat $lsFormat {
-                        append sCmd \" format \\"$sFormat\\"\"
+                        append sCmd " format \"$sFormat\""
                      }
                   }
 # End Fix 357699
                   eval $sCmd
                   lappend lsTempPolicy $sTempPol
                }
-               mql mod bus $sBusOid policy \"$sTempPol\"
-               mql mod bus $sBusOid policy \"$sBusPol\"
+               mql mod bus $sBusOid policy "$sTempPol"
+               mql mod bus $sBusOid policy "$sBusPol"
             } sResult] != 0} {
-               puts $iLogFileId \"\n$lBus - error in changing bus object state: $sResult\"
+               puts $iLogFileId "\n$lBus - error in changing bus object state: $sResult"
                if {$bSpinnerAgent} {
                   set iLogFileErr [open $sLogFileError a+]
-                  puts $iLogFileErr \"$lBus - error in changing bus object state: $sResult\"
+                  puts $iLogFileErr "$lBus - error in changing bus object state: $sResult"
                   close $iLogFileErr
                }
                set bError TRUE
                incr iErrTot
                set iRet 1
             } else {
-               puts $iLogFileId \"# $lBus: changing bus object state - successful\"
+               puts $iLogFileId "# $lBus: changing bus object state - successful"
                if { [ expr $iSt - $iBusSt ] > 0 } {
                   incr iPromoteTotal
                } else {
@@ -292,32 +292,32 @@ $cmd {
       set iError [expr $iErrTot - $iPrevError]
       set iPrevAddModDel [expr $iAddTotal + $iModTotal + $iDelTotal]
       set iPrevError $iErrTot
-      set sWrite \"...\"
+      set sWrite "..."
       if {$iAddModDel && $iError} {
-         set sWrite \"  \($iAddModDel\: $iError\!\)\"
+         set sWrite "  \($iAddModDel\: $iError\!\)"
       } elseif {$iAddModDel} {
-         set sWrite \"  \($iAddModDel\:\)\"
+         set sWrite "  \($iAddModDel\:\)"
       } elseif {$iError} {
-         set sWrite \"  \($iError\!\)\"
+         set sWrite "  \($iError\!\)"
       }
-      puts -nonewline \"$sWrite[expr $iTenPercent * 10]%\"
+      puts -nonewline "$sWrite[expr $iTenPercent * 10]%"
    }
 
 #main
 
-   if {$sAllFiles != \"\"} {
-      puts \"\n   global setting to modify bus objects if they exist: $bModIfExists\"
-      puts -nonewline \"   global setting for triggers: create - $bTriggerAdd; modify - $bTriggerMod; delete - $bTriggerDel\"
+   if {$sAllFiles != ""} {
+      puts "\n   global setting to modify bus objects if they exist: $bModIfExists"
+      puts -nonewline "   global setting for triggers: create - $bTriggerAdd; modify - $bTriggerMod; delete - $bTriggerDel"
    }
    mql verbose on
    mql trigger off
-   file mkdir \"./logs\"
-   if {[mql get env SPINNERLOGFILE] != \"\"} {
+   file mkdir "./logs"
+   if {[mql get env SPINNERLOGFILE] != ""} {
       set sLogFilePath [mql get env SPINNERLOGFILE]
       set sLogFileError [mql get env SPINNERERRORLOG]
       set bSpinnerAgent TRUE
    } else {    
-      set sLogFilePath \"./logs/BusObjects\.$sDate1.log\"
+      set sLogFilePath "./logs/BusObjects\.$sDate1.log"
       set bSpinnerAgent FALSE
    }
    set iLogFileId    [open $sLogFilePath a+]
@@ -326,8 +326,8 @@ $cmd {
    
    foreach sCurFile $sAllFiles {
       set iFileId    [open $sCurFile r]
-      puts $iLogFileId \"\n# \[[clock format [clock seconds] -format %H:%M:%S]\] File: '[file tail $sCurFile]'\"
-      puts -nonewline \"\nLoading bus objects from file '[file tail $sCurFile]'\"
+      puts $iLogFileId "\n# \[[clock format [clock seconds] -format %H:%M:%S]\] File: '[file tail $sCurFile]'"
+      puts -nonewline "\nLoading bus objects from file '[file tail $sCurFile]'"
       
       set iErrTot        0
       set iAddTotal      0 
@@ -364,7 +364,7 @@ $cmd {
       foreach sLine $lsFile {
          set sLine [string trim $sLine]
          set lsLine [split $sLine \t]
-         if {[string first \"<HEADER>\" $sLine] >= 0} {
+         if {[string first "<HEADER>" $sLine] >= 0} {
             set iHeader 0
             set iAttrEnd [expr [llength $lsLine] -2]
             set lsLine [lrange $lsLine 0 $iAttrEnd]
@@ -372,10 +372,10 @@ $cmd {
          }         
          if { $iHeader == 0 } {
 # 361693 (Revision Chain) - MJO - 10/9/2008
-            if {[string first \"Previous Rev\" $sLine] == 14} {
+            if {[string first "Previous Rev" $sLine] == 14} {
                set bRevision TRUE
             }
-            if {$iAttrEnd == \"end\"} {set iAttrEnd [expr [llength $lsLine] -1]}
+            if {$iAttrEnd == "end"} {set iAttrEnd [expr [llength $lsLine] -1]}
             if {$bRevision} {
                set llName     [ lrange  $lsLine 10 $iAttrEnd ]
             } else {
@@ -383,17 +383,17 @@ $cmd {
             }            
 # End 361693
             incr iHeader
-            set lsName \"\"
+            set lsName ""
             foreach lName $llName {
                set lName [string trim $lName]
                if {[catch {
-                  if {[string tolower $lName] != \"description\" && [mql print attribute $lName select type dump] == \"timestamp\"} {
+                  if {[string tolower $lName] != "description" && [mql print attribute $lName select type dump] == "timestamp"} {
                      set aTimeStamp($lName) TRUE
                   } else {
                      set aTimeStamp($lName) FALSE
                   }
                } sMsg] != 0} {
-               	  puts \"\nERROR: Attribute name '$lName' is not a valid attribute or field order is incorrect.\"
+               	  puts "\nERROR: Attribute name '$lName' is not a valid attribute or field order is incorrect."
                   close $iLogFileId
                	  exit 1
                	  return
@@ -401,7 +401,7 @@ $cmd {
                lappend lsName $lName
             }
             set llName $lsName
-         } elseif {$sLine != \"\"} {
+         } elseif {$sLine != ""} {
             set sType       [ string trim [ lindex $lsLine 0 ] ]
             set sName       [ string trim [ lindex $lsLine 1 ] ]
             set sRev        [ string trim [ lindex $lsLine 2 ] ]
@@ -425,19 +425,19 @@ $cmd {
                set llValue     [ lrange  $lsLine 9 $iAttrEnd ]
             }
 # End 361693
-            set lsName \"\"
-            set lsValue \"\"
+            set lsName ""
+            set lsValue ""
             foreach lName $llName lValue $llValue {
-               if {$lName != \"\"} {
+               if {$lName != ""} {
                   set lValue [string trim $lValue]
-                  if {$lValue != \"\"} {
-#                     if {$aTimeStamp($lName)} {set lValue [lindex [split [string trim $lValue] \" \"] 0]}
+                  if {$lValue != ""} {
+#                     if {$aTimeStamp($lName)} {set lValue [lindex [split [string trim $lValue] " "] 0]}
                      lappend lsName $lName
                      lappend lsValue $lValue
                   }
                }
             }
-            set llAttr [pCheckAttrHdr \"$lsName\" \"$lsValue\"]
+            set llAttr [pCheckAttrHdr "$lsName" "$lsValue"]
             set bNonByPass [string toupper [ string trim [ lindex $lsLine [expr $iAttrEnd + 1 ] ] ] ]
             set bTrigOver(1) [string toupper [ string trim [ lindex $lsLine [expr $iAttrEnd + 2 ] ] ] ]
             set bTrigOver(2) [string toupper [ string trim [ lindex $lsLine [expr $iAttrEnd + 3 ] ] ] ]
@@ -446,17 +446,17 @@ $cmd {
             set sTrig(2) $bTriggerMod
             set sTrig(3) $bTriggerDel
             for {set i 1} {$i < 4} {incr i} {
-               if {$bTrigOver($i) == \"ON\" || $bTrigOver($i) == \"OFF\"} {set sTrig($i) $bTrigOver($i)}
+               if {$bTrigOver($i) == "ON" || $bTrigOver($i) == "OFF"} {set sTrig($i) $bTrigOver($i)}
             }
             
 # flag for delete if fields after T N R are blank or Change Name field is <DELETE>
             set bDelete TRUE
             set bChgNR TRUE
-            if {[lindex $lsLine 3] == \"<DELETE>\"} {
+            if {[lindex $lsLine 3] == "<DELETE>"} {
                set bChgNR FALSE
             } else {
                for {set i 3} {$i < [llength $lsLine]} {incr i} {
-                  if {[lindex $lsLine $i] != \"\"} {
+                  if {[lindex $lsLine $i] != ""} {
                      set bDelete FALSE
                      break
                   }
@@ -464,71 +464,71 @@ $cmd {
             }
 
 # set mql command for adding or modifying object
-            set iErr  [ catch { mql print businessobject \"$sType\" \"$sName\" \"$sRev\" select exists dump } result1 ]
-            if { \"$sName\" != \"\"} {
+            set iErr  [ catch { mql print businessobject "$sType" "$sName" "$sRev" select exists dump } result1 ]
+            if { "$sName" != ""} {
                set bError FALSE
                set bMod FALSE
                set bAdd FALSE
                set bDel FALSE
                set bExists FALSE
-               if {$bScan != \"TRUE\"} {mql start transaction update}
-               if {$result1 == \"FALSE\" && $bDelete == \"FALSE\" } {
-                  if {$sName != $sChangeName && $sChangeName != \"\"} {set sName $sChangeName}
-                  if {$sRev != $sChangeRev && $sChangeRev != \"\"} {set sRev $sChangeRev}
-                  set iErr2  [ catch { mql print businessobject \"$sType\" \"$sName\" \"$sRev\" select exists dump } result2 ]
-                  if {$result2 == \"FALSE\"} {  
+               if {$bScan != "TRUE"} {mql start transaction update}
+               if {$result1 == "FALSE" && $bDelete == "FALSE" } {
+                  if {$sName != $sChangeName && $sChangeName != ""} {set sName $sChangeName}
+                  if {$sRev != $sChangeRev && $sChangeRev != ""} {set sRev $sChangeRev}
+                  set iErr2  [ catch { mql print businessobject "$sType" "$sName" "$sRev" select exists dump } result2 ]
+                  if {$result2 == "FALSE"} {  
 	# Modified by Solution Library for the New Line Feeder error - Start
-                     regsub -all \"<LINEFEED>\" $llAttr \"\\\n\" llAttr
-                     regsub -all \"<RETURN>\" $llAttr \"\\\n\" llAttr
-										 regsub -all \"<NEWLINE>\" $llAttr \"\\\n\" llAttr
+                     regsub -all "<LINEFEED>" $llAttr "\\\n" llAttr
+                     regsub -all "<RETURN>" $llAttr "\\\n" llAttr
+										 regsub -all "<NEWLINE>" $llAttr "\\\n" llAttr
 	# Modified by Solution Library for the New Line Feeder error - End
 	
 	             # Modified below for fixing 370077 on 25 Feb 09 . Added word escape. - start
-                     set sCmd  \"mql escape add businessobject \\"$sType\\" \\"$sName\\" \\"$sRev\\" policy \\"$sPolicy\\" vault \\"$sVault\\" owner \\"$sOwner\\" $llAttr\"
+                     set sCmd  "mql escape add businessobject \"$sType\" \"$sName\" \"$sRev\" policy \"$sPolicy\" vault \"$sVault\" owner \"$sOwner\" $llAttr"
      	             # Modified above for fixing 370077 on 25 Feb 09 . Added word escape. - end
                      set bTrigOn FALSE
 					 
-                     if {$bTrigOver(1) == \"ON\" || ($bTriggerAdd == \"ON\" && $bTrigOver(1) != \"OFF\")} {
+                     if {$bTrigOver(1) == "ON" || ($bTriggerAdd == "ON" && $bTrigOver(1) != "OFF")} {
                         mql trigger on
                         set bTrigOn TRUE
                      }
 					
                      if {$bScan} {
                         puts $iLogFileId $sCmd
-                     } elseif {[string compare $sType \"Substance\"] == 0} {
+                     } elseif {[string compare $sType "Substance"] == 0} {
                         #add by lsy 20191018 start
-						# one \"foreach\" is a piece of data that contains a line of names and a line of values;
+						# one "foreach" is a piece of data that contains a line of names and a line of values;
 						mql trigger off
-						set CASNR \"\" 
-						set REACH \"\"
-						set GADSL \"\"
-						set SUBNAME \"\"
+						set CASNR "" 
+						set REACH ""
+						set GADSL ""
+						set SUBNAME ""
 						foreach lName $llName lValue $llValue {
-							if {$lName != \"\"&&[string compare $lName \"CAS Number\"] == 0} {
+							if {$lName != ""&&[string compare $lName "CAS Number"] == 0} {
 								set CASNR [string trim $lValue]
 							}
-							if {$lName != \"\"&&[string compare $lName \"GWM REACH\"] == 0} {
+							if {$lName != ""&&[string compare $lName "GWM REACH"] == 0} {
 								set REACH [string trim $lValue]
 							}
-							if {$lName != \"\"&&[string compare $lName \"GWM GADSL\"] == 0} {
+							if {$lName != ""&&[string compare $lName "GWM GADSL"] == 0} {
 								set GADSL [string trim $lValue]
 							}
-							if {$lName != \"\"&&[string compare $lName \"Substance Name\"] == 0} {
+							if {$lName != ""&&[string compare $lName "Substance Name"] == 0} {
 								set SUBNAME [string trim $lValue]
 							}
 						}
 						#if 'CAS Number' is not null,chenge 'GWM REACH'/'GWM GADSL' by 'CAS Number';else change by 'Substance Name'
-						if {$CASNR != \"\"} {
-							set iErr  [ catch { mql temp query bus Substance * * where \'attribute\[CAS Number\]==\\"$CASNR\\"\' select id type } resultCas ]
-							#set iErr [catch {set idls [ split [ mql temp query bus Substance * * where \'attribute\[CAS Number\]==\\"2\\"\' select id dump | ] | ]} sMsg]
+						if {$CASNR != ""} {
+							set iErr  [ catch { mql temp query bus Substance * * where \'attribute\[CAS Number\]==\"$CASNR\"\' select id type } resultCas ]
+							#set iErr [catch {set idls [ split [ mql temp query bus Substance * * where \'attribute\[CAS Number\]==\"2\"\' select id dump | ] | ]} sMsg]
 							puts $resultCas
-							if {$resultCas != \"\"} {
-								regsub -all \"\\s*|\t|\r|\n\" $resultCas \"\" resultCas
+							if {$resultCas != ""} {
+								regsub -all "\\s*|\t|\r|\n" $resultCas "" resultCas
 								puts $resultCas
-								set Casid [string range $resultCas [expr [string first \"id = \" $resultCas] + 5 ] [expr [string first \"type = \" $resultCas] - 1]]
+								set Casid [string range $resultCas [expr [string first "id = " $resultCas] + 5 ] [expr [string first "type = " $resultCas] - 1]]
 								puts $Casid
 								
-								set modMql  \"mql mod bus $Casid 'GWM REACH' \\"$REACH\\" 'GWM GADSL' \\"$GADSL\\"\" 
+								set modMql  "mql mod bus $Casid 'GWM REACH' \"$REACH\" 'GWM GADSL' \"$GADSL\"" 
 								puts $modMql
 								set iErr  [ catch {eval $modMql} resultMod ]
 								puts $resultMod
@@ -536,27 +536,27 @@ $cmd {
 						} 
 						#add by lsy 20191018 end
                      } elseif {[catch {eval $sCmd} sResult] != 0} {
-                        puts $iLogFileId \"$sCmd\"
-                        puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult - triggers $sTrig(1)\"
+                        puts $iLogFileId "$sCmd"
+                        puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
                         if {$bSpinnerAgent} {
                            set iLogFileErr [open $sLogFileError a+]
-                           puts $iLogFileErr \"\\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult - triggers $sTrig(1)\"
+                           puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
                            close $iLogFileErr
                         }
                         set bError TRUE
                      } else {
                         set bAdd TRUE
-                        puts $iLogFileId \"$sCmd\"
-                        puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult - triggers $sTrig(1)\"
-                        set lBus \"\\"$sType\\" \\"$sName\\" \\"$sRev\\"\"
-                        set iErr  [ catch { mql print businessobject \"$sType\" \"$sName\" \"$sRev\" select current dump } sCurState ]   
-                        if { \"$sCurState\" == \"$sState\"} {
+                        puts $iLogFileId "$sCmd"
+                        puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
+                        set lBus "\"$sType\" \"$sName\" \"$sRev\""
+                        set iErr  [ catch { mql print businessobject "$sType" "$sName" "$sRev" select current dump } sCurState ]   
+                        if { "$sCurState" == "$sState"} {
                         } else {	
-                           set lBus \"\\"$sType\\" \\"$sName\\" \\"$sRev\\"\"
+                           set lBus "\"$sType\" \"$sName\" \"$sRev\""
                            if {$bScan} {
-                              puts $iLogFileId \"Promote '$lBus' to state '$sState'\"
+                              puts $iLogFileId "Promote '$lBus' to state '$sState'"
                            } else {
-                              pPromoteToTargetState \"$lBus\" \"$sState\"
+                              pPromoteToTargetState "$lBus" "$sState"
                            }
                         }
                      }
@@ -570,32 +570,32 @@ $cmd {
                
 # add revision chain (361693 - MJO - 10/9/2008)
                if {$bRevision && !$bError} {
-                  if { \"$sPrevRev\" == \"\"} {
-                  } elseif { \"$sRev\" == \"$sPrevRev\" } {
-                  } elseif { [mql print bus \"$sType\" \"$sName\" \"$sRev\" select previous dump] != \"\" } {
-                  } elseif {[mql print bus \"$sType\" \"$sName\" \"$sPrevRev\" select exists dump] != \"TRUE\"} {
+                  if { "$sPrevRev" == ""} {
+                  } elseif { "$sRev" == "$sPrevRev" } {
+                  } elseif { [mql print bus "$sType" "$sName" "$sRev" select previous dump] != "" } {
+                  } elseif {[mql print bus "$sType" "$sName" "$sPrevRev" select exists dump] != "TRUE"} {
                   } else {
-                     set sCurId [mql print businessobject \"$sType\" \"$sName\" \"$sRev\" select id dump]
-                     set lsPrev [split [mql print businessobject \"$sType\" \"$sName\" \"$sPrevRev\" select id next dump |] |]   
-                     set sPrevId       [ string trim [ lindex \"$lsPrev\" 0 ] ]
-                     set sPrevNextRev  [ string trim [ lindex \"$lsPrev\" 1 ] ]
-                     if {$sPrevNextRev != \"\"} {
+                     set sCurId [mql print businessobject "$sType" "$sName" "$sRev" select id dump]
+                     set lsPrev [split [mql print businessobject "$sType" "$sName" "$sPrevRev" select id next dump |] |]   
+                     set sPrevId       [ string trim [ lindex "$lsPrev" 0 ] ]
+                     set sPrevNextRev  [ string trim [ lindex "$lsPrev" 1 ] ]
+                     if {$sPrevNextRev != ""} {
                      } else {
-                        set sCmd  \"mql revise bus $sPrevId bus $sCurId\"
+                        set sCmd  "mql revise bus $sPrevId bus $sCurId"
                         if {$bScan} {
                            puts $iLogFileId $sCmd
                         } elseif {[catch {eval $sCmd} sResult] != 0} {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"\n\\"$sType\\" \\"$sName\\" \\"$sRev\\" - error in connecting revision chain: $sResult - triggers off\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "\n\"$sType\" \"$sName\" \"$sRev\" - error in connecting revision chain: $sResult - triggers off"
                            if {$bSpinnerAgent} {
                               set iLogFileErr [open $sLogFileError a+]
-                              puts $iLogFileErr \"\\"$sType\\" \\"$sName\\" \\"$sRev\\" - error in connecting revision chain : $sResult - triggers off\"
+                              puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\" - error in connecting revision chain : $sResult - triggers off"
                               close $iLogFileErr
                            }
                            set bError TRUE
                         } else {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": revision chain connected - triggers off\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": revision chain connected - triggers off"
                            set bMod TRUE
                            incr iRevChainTotal
                         }
@@ -608,13 +608,13 @@ $cmd {
                   set bChgName FALSE
                   set bChgRev FALSE
 # modify name or name/rev
-                  if {$bChgNR && $sName != $sChangeName && $sChangeName != \"\"} {
-                     if {$sRev != $sChangeRev && $sChangeRev != \"\"} {
-                        set iErr3  [ catch { mql print businessobject \"$sType\" \"$sChangeName\" \"$sChangeRev\" select exists dump } result3 ]
-                        if {$result3 == \"FALSE\"} {
-                           set sCmd  \"mql mod businessobject \\"$sType\\" \\"$sName\\" \\"$sRev\\" name \\"$sChangeName\\" revision \\"$sChangeRev\\"\"
+                  if {$bChgNR && $sName != $sChangeName && $sChangeName != ""} {
+                     if {$sRev != $sChangeRev && $sChangeRev != ""} {
+                        set iErr3  [ catch { mql print businessobject "$sType" "$sChangeName" "$sChangeRev" select exists dump } result3 ]
+                        if {$result3 == "FALSE"} {
+                           set sCmd  "mql mod businessobject \"$sType\" \"$sName\" \"$sRev\" name \"$sChangeName\" revision \"$sChangeRev\""
                            set bTrigOn FALSE
-                           if {$bTrigOver(2) == \"ON\" || ($bTriggerMod == \"ON\" && $bTrigOver(2) != \"OFF\")} {
+                           if {$bTrigOver(2) == "ON" || ($bTriggerMod == "ON" && $bTrigOver(2) != "OFF")} {
                               mql trigger on
                               set bTrigOn TRUE
                            }
@@ -625,11 +625,11 @@ $cmd {
                            set bDelete TRUE
                         }
                      } else {
-                        set iErr4  [ catch { mql print businessobject \"$sType\" \"$sChangeName\" \"$sRev\" select exists dump } result4 ]
-                        if {$result4 == \"FALSE\"} {
-                           set sCmd  \"mql mod businessobject \\"$sType\\" \\"$sName\\" \\"$sRev\\" name \\"$sChangeName\\"\"
+                        set iErr4  [ catch { mql print businessobject "$sType" "$sChangeName" "$sRev" select exists dump } result4 ]
+                        if {$result4 == "FALSE"} {
+                           set sCmd  "mql mod businessobject \"$sType\" \"$sName\" \"$sRev\" name \"$sChangeName\""
                            set bTrigOn FALSE
-                           if {$bTrigOver(2) == \"ON\" || ($bTriggerMod == \"ON\" && $bTrigOver(2) != \"OFF\")} {
+                           if {$bTrigOver(2) == "ON" || ($bTriggerMod == "ON" && $bTrigOver(2) != "OFF")} {
                               mql trigger on
                               set bTrigOn TRUE
                            }
@@ -643,44 +643,44 @@ $cmd {
                         if {$bScan} {
                            puts $iLogFileId $sCmd
                         } elseif {[catch {eval $sCmd} sResult] != 0} {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult"
                            if {$bSpinnerAgent} {
                               set iLogFileErr [open $sLogFileError a+]
-                              puts $iLogFileErr \"\\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult\"
+                              puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\": $sResult"
                               close $iLogFileErr
                            }
                            set bError TRUE
                         } else {
                            set bMod TRUE
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult"
                         }
                         if {$bTrigOn} {mql trigger off}
                      }
 # add revision
-                  } elseif {$bChgNR && $sRev != $sChangeRev && $sChangeRev != \"\"} {
-                     set iErr5  [ catch { mql print businessobject \"$sType\" \"$sName\" \"$sChangeRev\" select exists dump } result5 ]
-                     if {$result5 == \"FALSE\"} {
+                  } elseif {$bChgNR && $sRev != $sChangeRev && $sChangeRev != ""} {
+                     set iErr5  [ catch { mql print businessobject "$sType" "$sName" "$sChangeRev" select exists dump } result5 ]
+                     if {$result5 == "FALSE"} {
                         set sNameTemp [clock seconds]
-                        set sCmd  \"mql copy businessobject \\"$sType\\" \\"$sName\\" \\"$sRev\\" to $sNameTemp \\"$sChangeRev\\";mql mod businessobject \\"$sType\\" $sNameTemp \\"$sChangeRev\\" name \\"$sName\\"\"
+                        set sCmd  "mql copy businessobject \"$sType\" \"$sName\" \"$sRev\" to $sNameTemp \"$sChangeRev\";mql mod businessobject \"$sType\" $sNameTemp \"$sChangeRev\" name \"$sName\""
                         set bChgRev TRUE
                         set bNonByPass TRUE
                         if {$bScan} {
                            puts $iLogFileId $sCmd
                         } elseif {[catch {eval $sCmd} sResult] != 0} {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult"
                            if {$bSpinnerAgent} {
                               set iLogFileErr [open $sLogFileError a+]
-                              puts $iLogFileErr \"\\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult\"
+                              puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\": $sResult"
                               close $iLogFileErr
                            }
                            set bError TRUE
                         } else {
                            set bMod TRUE
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult"
                         }
                      }
                      set bDelete TRUE
@@ -688,164 +688,164 @@ $cmd {
 
 # delete bus object
                   if {$bDelete} {
-                     set sCmd  \"mql delete businessobject \\"$sType\\" \\"$sName\\" \\"$sRev\\"\"
+                     set sCmd  "mql delete businessobject \"$sType\" \"$sName\" \"$sRev\""
                      set bTrigOn FALSE
-                     if {$bTrigOver(3) == \"ON\" || ($bTriggerDel == \"ON\" && $bTrigOver(3) != \"OFF\")} {
+                     if {$bTrigOver(3) == "ON" || ($bTriggerDel == "ON" && $bTrigOver(3) != "OFF")} {
                      	mql trigger on
                      	set bTrigOn TRUE
                      }
                      if {$bScan} {
                         puts $iLogFileId $sCmd
                      } elseif {[catch {eval $sCmd} sResult] != 0} {
-                        puts $iLogFileId \"$sCmd\"
-                        puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult - triggers $sTrig(3)\"
+                        puts $iLogFileId "$sCmd"
+                        puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(3)"
                         if {$bSpinnerAgent} {
                            set iLogFileErr [open $sLogFileError a+]
-                           puts $iLogFileErr \"\\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult - triggers $sTrig(3)\"
+                           puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(3)"
                            close $iLogFileErr
                         }
                         set bError TRUE
                      } else {
                         set bDel TRUE
-                        puts $iLogFileId \"$sCmd\"
-                        puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": $sResult - triggers $sTrig(3)\"
+                        puts $iLogFileId "$sCmd"
+                        puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(3)"
                      }
                      if {$bTrigOn} {mql trigger off}
                   }
                   
                   if {$bChgName} {
                      set sName $sChangeName
-                  } elseif {$bChgNR && $bDelete && $sName != $sChangeName && $sChangeName != \"\"} {
+                  } elseif {$bChgNR && $bDelete && $sName != $sChangeName && $sChangeName != ""} {
                      set sName $sChangeName
                   }
                   if {$bChgRev} {
                      set sRev $sChangeRev
-                  } elseif {$bChgNR && $bDelete && $sRev != $sChangeRev && $sChangeRev != \"\"} {
+                  } elseif {$bChgNR && $bDelete && $sRev != $sChangeRev && $sChangeRev != ""} {
                      set sRev $sChangeRev
                   }
 # modify other elements if setting allows                     
-                  if {($bDel != \"TRUE\" ) && (($bModIfExists && $bNonByPass != \"FALSE\") || $bNonByPass == \"TRUE\")} {
-                     set iErr  [ catch { mql print businessobject \"$sType\" \"$sName\" \"$sRev\" select policy vault owner id current dump \",\" } sChgMod ]   
-                     set sChgMod1     [split \"$sChgMod\" \",\" ] 
-                     set sCurPolicy   [ string trim [ lindex \"$sChgMod1\" 0 ] ]
-                     set sCurVault    [ string trim [ lindex \"$sChgMod1\" 1 ] ]
-                     set sCurOwner    [ string trim [ lindex \"$sChgMod1\" 2 ] ]
-                     set sCurId       [ string trim [ lindex \"$sChgMod1\" 3 ] ]
-                     set sCurState    [ string trim [ lindex \"$sChgMod1\" 4 ] ]
+                  if {($bDel != "TRUE" ) && (($bModIfExists && $bNonByPass != "FALSE") || $bNonByPass == "TRUE")} {
+                     set iErr  [ catch { mql print businessobject "$sType" "$sName" "$sRev" select policy vault owner id current dump "," } sChgMod ]   
+                     set sChgMod1     [split "$sChgMod" "," ] 
+                     set sCurPolicy   [ string trim [ lindex "$sChgMod1" 0 ] ]
+                     set sCurVault    [ string trim [ lindex "$sChgMod1" 1 ] ]
+                     set sCurOwner    [ string trim [ lindex "$sChgMod1" 2 ] ]
+                     set sCurId       [ string trim [ lindex "$sChgMod1" 3 ] ]
+                     set sCurState    [ string trim [ lindex "$sChgMod1" 4 ] ]
                      set bTrigOn FALSE
-                     if {$bTrigOver(2) == \"ON\" || ($bTriggerMod == \"ON\" && $bTrigOver(2) != \"OFF\")} {
+                     if {$bTrigOver(2) == "ON" || ($bTriggerMod == "ON" && $bTrigOver(2) != "OFF")} {
                      	  mql trigger on
                      	  set bTrigOn TRUE
                      }
 # modify policy
-                     if { \"$sPolicy\" == \"\"} {
-                     } elseif { \"$sPolicy\" == \"$sCurPolicy\" } {
+                     if { "$sPolicy" == ""} {
+                     } elseif { "$sPolicy" == "$sCurPolicy" } {
                      } else {
-                        set sCmd  \"mql modify businessobject $sCurId policy \\"$sPolicy\\"\"
+                        set sCmd  "mql modify businessobject $sCurId policy \"$sPolicy\""
                         if {$bScan} {
                            puts $iLogFileId $sCmd
                         } elseif {[catch {eval $sCmd} sResult] != 0} {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"\n\\"$sType\\" \\"$sName\\" \\"$sRev\\" - error in modifying policy: $sResult - triggers $sTrig(2)\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "\n\"$sType\" \"$sName\" \"$sRev\" - error in modifying policy: $sResult - triggers $sTrig(2)"
                            if {$bSpinnerAgent} {
                               set iLogFileErr [open $sLogFileError a+]
-                              puts $iLogFileErr \"\\"$sType\\" \\"$sName\\" \\"$sRev\\" - error in modifying policy: $sResult - triggers $sTrig(2)\"
+                              puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\" - error in modifying policy: $sResult - triggers $sTrig(2)"
                               close $iLogFileErr
                            }
                            set bError TRUE
                         } else {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": policy changed - triggers $sTrig(2)\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": policy changed - triggers $sTrig(2)"
                            set bMod TRUE
                            incr iPolicyTotal
-                           set sCurState [mql print businessobject \"$sType\" \"$sName\" \"$sRev\" select current dump]
+                           set sCurState [mql print businessobject "$sType" "$sName" "$sRev" select current dump]
                         }
                      }
 # modify vault
-                     if { \"$sVault\" == \"\"} {
-                     } elseif { \"$sVault\" == \"$sCurVault\" } {
+                     if { "$sVault" == ""} {
+                     } elseif { "$sVault" == "$sCurVault" } {
                      } else {
-                        set sCmd  \"mql modify businessobject $sCurId vault \\"$sVault\\"\"
+                        set sCmd  "mql modify businessobject $sCurId vault \"$sVault\""
                         if {$bScan} {
                            puts $iLogFileId $sCmd
                         } elseif {[catch {eval $sCmd} sResult] != 0} {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"\n\\"$sType\\" \\"$sName\\" \\"$sRev\\" - error in change vault: $sResult - triggers $sTrig(2)\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "\n\"$sType\" \"$sName\" \"$sRev\" - error in change vault: $sResult - triggers $sTrig(2)"
                            if {$bSpinnerAgent} {
                               set iLogFileErr [open $sLogFileError a+]
-                              puts $iLogFileErr \"\\"$sType\\" \\"$sName\\" \\"$sRev\\" - error in change vault: $sResult - triggers $sTrig(2)\"
+                              puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\" - error in change vault: $sResult - triggers $sTrig(2)"
                               close $iLogFileErr
                            }
                            set bError TRUE
                         } else {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": vault changed - triggers $sTrig(2)\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": vault changed - triggers $sTrig(2)"
                            set bMod TRUE
                            incr iVaultTotal
                         }
                      }
 # modify owner
-                     if { \"$sOwner\" == \"\"} {
-                     } elseif { \"$sOwner\" ==  \"$sCurOwner\" } {
+                     if { "$sOwner" == ""} {
+                     } elseif { "$sOwner" ==  "$sCurOwner" } {
                      } else {
-                        set sCmd  \"mql modify businessobject $sCurId owner \\"$sOwner\\"\"
+                        set sCmd  "mql modify businessobject $sCurId owner \"$sOwner\""
                         if {$bScan} {
                            puts $iLogFileId $sCmd
                         } elseif {[catch {eval $sCmd} sResult] != 0} {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"\n\\"$sType\\" \\"$sName\\" \\"$sRev\\" - error in owner change: $sResult - triggers $sTrig(2)\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "\n\"$sType\" \"$sName\" \"$sRev\" - error in owner change: $sResult - triggers $sTrig(2)"
                            if {$bSpinnerAgent} {
                                set iLogFileErr [open $sLogFileError a+]
-                               puts $iLogFileErr \"\\"$sType\\" \\"$sName\\" \\"$sRev\\" - error in owner change: $sResult - triggers $sTrig(2)\"
+                               puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\" - error in owner change: $sResult - triggers $sTrig(2)"
                                close $iLogFileErr
                            }
                            set bError TRUE
                         } else {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": owner changed - triggers $sTrig(2)\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": owner changed - triggers $sTrig(2)"
                            set bMod TRUE
                            incr iOwnerTotal
                         }
                      }
 # modify attributes
-                     if { \"$llAttr\" == \"\"} {
+                     if { "$llAttr" == ""} {
                      } else {
-                     	regsub -all \"<NEWLINE>\" $llAttr \"\\\n\" llAttr
-                     	regsub -all \"<LINEFEED>\" $llAttr \"\\\n\" llAttr
-                     	regsub -all \"<RETURN>\" $llAttr \"\\\n\" llAttr
-                     	regsub -all \"<BACKSLASH>\" $llAttr \"\\\\\\\\\\\\\" llAttr
+                     	regsub -all "<NEWLINE>" $llAttr "\\\n" llAttr
+                     	regsub -all "<LINEFEED>" $llAttr "\\\n" llAttr
+                     	regsub -all "<RETURN>" $llAttr "\\\n" llAttr
+                     	regsub -all "<BACKSLASH>" $llAttr "\\\\\\\\\\\\" llAttr
 # Modified below for fixing 370077 on 25 Feb 09 . Added word escape. - start
-                     	set sCmd  \"mql escape modify businessobject $sCurId $llAttr\"
+                     	set sCmd  "mql escape modify businessobject $sCurId $llAttr"
 # Modified below for fixing 370077 on 25 Feb 09 . Added word escape. - end
 
                         if {$bScan} {
                            puts $iLogFileId $sCmd
                         } elseif {[catch {eval $sCmd} sResult] != 0} {
 							
-						   puts $iLogFileId \"some msg\"
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"\n\\"$sType\\" \\"$sName\\" \\"$sRev\\" - error in attributes modify: $sResult - triggers $sTrig(2)\"
+						   puts $iLogFileId "some msg"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "\n\"$sType\" \"$sName\" \"$sRev\" - error in attributes modify: $sResult - triggers $sTrig(2)"
                            if {$bSpinnerAgent} {
                               set iLogFileErr [open $sLogFileError a+]
-                              puts $iLogFileErr \"\\"$sType\\" \\"$sName\\" \\"$sRev\\" - error in attributes modify: $sResult - triggers $sTrig(2)\"
+                              puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\" - error in attributes modify: $sResult - triggers $sTrig(2)"
                               close $iLogFileErr
                            }
                            set bError TRUE
                         } else {
-                           puts $iLogFileId \"$sCmd\"
-                           puts $iLogFileId \"# \\"$sType\\" \\"$sName\\" \\"$sRev\\": attributes modified - triggers $sTrig(2)\"
+                           puts $iLogFileId "$sCmd"
+                           puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": attributes modified - triggers $sTrig(2)"
                            set bMod TRUE
                         }
                      }
                      if {$bTrigOn} {mql trigger off}
 # modify states
-                     if { \"$sCurState\" == \"$sState\"} {
+                     if { "$sCurState" == "$sState"} {
                      } else {	
-                        set lBus \"\\"$sType\\" \\"$sName\\" \\"$sRev\\"\"
+                        set lBus "\"$sType\" \"$sName\" \"$sRev\""
                         if {$bScan} {
-                           puts $iLogFileId \"Change '$lBus' to state '$sState'\"
+                           puts $iLogFileId "Change '$lBus' to state '$sState'"
                         } else {
-                           pPromoteToTargetState \"$lBus\" \"$sState\"
+                           pPromoteToTargetState "$lBus" "$sState"
                            set bMod TRUE
                         }
                      }
@@ -854,25 +854,25 @@ $cmd {
 
 # write cue
                if {$bError} {
-               	  if {$bScan != \"TRUE\"} {mql abort transaction}
-                  if {$bPercent == \"FALSE\"} {puts -nonewline \"!\"}
+               	  if {$bScan != "TRUE"} {mql abort transaction}
+                  if {$bPercent == "FALSE"} {puts -nonewline "!"}
                   incr iErrTot
                } elseif {$bMod || $bAdd} {
-                  if {$bScan != \"TRUE\"} {mql commit transaction}
+                  if {$bScan != "TRUE"} {mql commit transaction}
                   if {$bMod} {
                      incr iModTotal
-                     if {$bPercent == \"FALSE\"} {puts -nonewline \":\"}
+                     if {$bPercent == "FALSE"} {puts -nonewline ":"}
                   } else {
                      incr iAddTotal
-                     if {$bPercent == \"FALSE\"} {puts -nonewline \"+\"}
+                     if {$bPercent == "FALSE"} {puts -nonewline "+"}
                   }
                } elseif {$bDel} {
-                  if {$bScan != \"TRUE\"} {mql commit transaction}
-                  if {$bPercent == \"FALSE\"} {puts -nonewline \"-\"}
+                  if {$bScan != "TRUE"} {mql commit transaction}
+                  if {$bPercent == "FALSE"} {puts -nonewline "-"}
                   incr iDelTotal
                } else {
-                  if {$bScan != \"TRUE\"} {mql commit transaction}
-                  if {$bPercent == \"FALSE\"} {puts -nonewline \".\"}
+                  if {$bScan != "TRUE"} {mql commit transaction}
+                  if {$bPercent == "FALSE"} {puts -nonewline "."}
                   incr iSkipTotal
                }
                if {$bPercent && $iTenPercent < 10 && [expr $iAddTotal + $iModTotal + $iDelTotal + $iSkipTotal + $iErrTot] > [expr $iTenPercent * $iPercent]} {
@@ -884,43 +884,43 @@ $cmd {
 			
 				puts lsyCode
 					#add by lsy 20191018 start
-					# one \"foreach\" is a piece of data that contains a line of names and a line of values;
+					# one "foreach" is a piece of data that contains a line of names and a line of values;
 					mql trigger off
-					set CASNR \"\" 
-					set REACH \"\"
-					set GADSL \"\"
-					set SUBNAME \"\"
+					set CASNR "" 
+					set REACH ""
+					set GADSL ""
+					set SUBNAME ""
 					foreach lName $llName lValue $llValue {
-						if {$lName != \"\"&&[string compare $lName \"CAS Number\"] == 0} {
+						if {$lName != ""&&[string compare $lName "CAS Number"] == 0} {
 							set CASNR [string trim $lValue]
 						}
-						if {$lName != \"\"&&[string compare $lName \"GWM REACH\"] == 0} {
+						if {$lName != ""&&[string compare $lName "GWM REACH"] == 0} {
 							set REACH [string trim $lValue]
 						}
-						if {$lName != \"\"&&[string compare $lName \"GWM GADSL\"] == 0} {
+						if {$lName != ""&&[string compare $lName "GWM GADSL"] == 0} {
 							set GADSL [string trim $lValue]
 						}
-						if {$lName != \"\"&&[string compare $lName \"Substance Name\"] == 0} {
+						if {$lName != ""&&[string compare $lName "Substance Name"] == 0} {
 							set SUBNAME [string trim $lValue]
 						}
 					}
 					#if 'CAS Number' is not null,chenge 'GWM REACH'/'GWM GADSL' by 'CAS Number';else change by 'Substance Name'
-					if {$CASNR != \"\"} {
-						set iErr  [ catch { mql temp query bus Substance * * where \'attribute\[CAS Number\]==\\"$CASNR\\"\' select id type } resultCas ]
-						#set iErr [catch {set idls [ split [ mql temp query bus Substance * * where \'attribute\[CAS Number\]==\\"2\\"\' select id dump | ] | ]} sMsg]
+					if {$CASNR != ""} {
+						set iErr  [ catch { mql temp query bus Substance * * where \'attribute\[CAS Number\]==\"$CASNR\"\' select id type } resultCas ]
+						#set iErr [catch {set idls [ split [ mql temp query bus Substance * * where \'attribute\[CAS Number\]==\"2\"\' select id dump | ] | ]} sMsg]
 						puts $resultCas
-						if {$resultCas != \"\"} {
-							regsub -all \"\\s*|\t|\r|\n\" $resultCas \"\" resultCas
+						if {$resultCas != ""} {
+							regsub -all "\\s*|\t|\r|\n" $resultCas "" resultCas
 							puts $resultCas
-							set Casid [string range $resultCas [expr [string first \"id = \" $resultCas] + 5 ] [expr [string first \"type = \" $resultCas] - 1]]
+							set Casid [string range $resultCas [expr [string first "id = " $resultCas] + 5 ] [expr [string first "type = " $resultCas] - 1]]
 							puts $Casid
 							
-							set modMql  \"mql mod bus $Casid 'GWM REACH' \\"$REACH\\" 'GWM GADSL' \\"$GADSL\\"\" 
+							set modMql  "mql mod bus $Casid 'GWM REACH' \"$REACH\" 'GWM GADSL' \"$GADSL\"" 
 							puts $modMql
 							set iErr  [ catch {eval $modMql} resultMod ]
 							puts $resultMod
 						}
-					} elseif {$SUBNAME != \"\"} {
+					} elseif {$SUBNAME != ""} {
 						  
 					}
 					#add by lsy 20191018 end
@@ -939,9 +939,9 @@ $cmd {
    mql set env BUSOBJERROR $iErrTotal
 # Delete temporary policies for changing states
    foreach sTempPol $lsTempPolicy {
-      catch {mql delete policy \"$sTempPol\"} 
+      catch {mql delete policy "$sTempPol"} 
 	  
    }
-   puts \"\"
+   puts ""
 } 
 # end program
