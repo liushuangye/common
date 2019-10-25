@@ -4067,7 +4067,10 @@ fCarPartMFluid   =new BigDecimal((double)fCarPartMNo).setScale(scale,roundingMod
 									htGWMSub = new Hashtable();
 									Hashtable htSub = (Hashtable) subItr.next();
 									String sSubId = (String) htSub.get(SELECT_ID);
-									String sSubName = (String) htSub.get(SELECT_NAME);
+									//changed by lsy 20191019 start
+									//String sSubName = (String) htSub.get(SELECT_NAME);
+									String sSubName = (String) htSub.get("attribute[Substance Name]");
+									//changed by lsy 20191019 end
 									String sSubCASNumber = (String) htSub.get("attribute[CAS Number]");
 									String sSubREACH = (String) htSub.get("attribute[GWM REACH]");
 									set_cas.add(sSubCASNumber);//add by lsy

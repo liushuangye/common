@@ -497,6 +497,7 @@ $cmd {
                         puts $iLogFileId $sCmd
                      } elseif {[string compare $sType "Substance"] == 0} {
                         #add by lsy 20191018 start
+						#if there is a Substance has the same CAS Number,no need to add a new ,only change some attributes;
 						# one "foreach" is a piece of data that contains a line of names and a line of values;
 						mql trigger off
 						set CASNR "" 
@@ -517,6 +518,7 @@ $cmd {
 								set SUBNAME [string trim $lValue]
 							}
 						}
+						set string [encoding convertto utf-8 $sName]
 						#if 'CAS Number' is not null,chenge 'GWM REACH'/'GWM GADSL' by 'CAS Number';else change by 'Substance Name'
 						if {$CASNR != ""} {
 							set iErr  [ catch { mql temp query bus Substance * * where \'attribute\[CAS Number\]==\"$CASNR\"\' select id type } resultCas ]
@@ -532,34 +534,61 @@ $cmd {
 								puts $modMql
 								set iErr  [ catch {eval $modMql} resultMod ]
 								puts $resultMod
-							}
+							} elseif {[catch {eval $sCmd} sResult] != 0} {
+								puts $iLogFileId "$sCmd"
+								puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
+								if {$bSpinnerAgent} {
+								   set iLogFileErr [open $sLogFileError a+]
+								   puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
+								   close $iLogFileErr
+								}
+								set bError TRUE
+							 } else {
+								set bAdd TRUE
+								puts $iLogFileId "$sCmd"
+								puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
+								set lBus "\"$sType\" \"$sName\" \"$sRev\""
+								set iErr  [ catch { mql print businessobject "$sType" "$sName" "$sRev" select current dump } sCurState ]   
+								if { "$sCurState" == "$sState"} {
+								} else {	
+								   set lBus "\"$sType\" \"$sName\" \"$sRev\""
+								   if {$bScan} {
+									  puts $iLogFileId "Promote '$lBus' to state '$sState'"
+								   } else {
+									  pPromoteToTargetState "$lBus" "$sState"
+								   }
+								}
+							 }
 						} 
 						#add by lsy 20191018 end
-                     } elseif {[catch {eval $sCmd} sResult] != 0} {
-                        puts $iLogFileId "$sCmd"
-                        puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
-                        if {$bSpinnerAgent} {
-                           set iLogFileErr [open $sLogFileError a+]
-                           puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
-                           close $iLogFileErr
-                        }
-                        set bError TRUE
-                     } else {
-                        set bAdd TRUE
-                        puts $iLogFileId "$sCmd"
-                        puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
-                        set lBus "\"$sType\" \"$sName\" \"$sRev\""
-                        set iErr  [ catch { mql print businessobject "$sType" "$sName" "$sRev" select current dump } sCurState ]   
-                        if { "$sCurState" == "$sState"} {
-                        } else {	
-                           set lBus "\"$sType\" \"$sName\" \"$sRev\""
-                           if {$bScan} {
-                              puts $iLogFileId "Promote '$lBus' to state '$sState'"
-                           } else {
-                              pPromoteToTargetState "$lBus" "$sState"
-                           }
-                        }
-                     }
+                     } 
+					 if 0 {
+						 elseif {[catch {eval $sCmd} sResult] != 0} {
+							puts $iLogFileId "$sCmd"
+							puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
+							if {$bSpinnerAgent} {
+							   set iLogFileErr [open $sLogFileError a+]
+							   puts $iLogFileErr "\"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
+							   close $iLogFileErr
+							}
+							set bError TRUE
+						 } else {
+							set bAdd TRUE
+							puts $iLogFileId "$sCmd"
+							puts $iLogFileId "# \"$sType\" \"$sName\" \"$sRev\": $sResult - triggers $sTrig(1)"
+							set lBus "\"$sType\" \"$sName\" \"$sRev\""
+							set iErr  [ catch { mql print businessobject "$sType" "$sName" "$sRev" select current dump } sCurState ]   
+							if { "$sCurState" == "$sState"} {
+							} else {	
+							   set lBus "\"$sType\" \"$sName\" \"$sRev\""
+							   if {$bScan} {
+								  puts $iLogFileId "Promote '$lBus' to state '$sState'"
+							   } else {
+								  pPromoteToTargetState "$lBus" "$sState"
+							   }
+							}
+						 }
+					 }
                      if {$bTrigOn} {mql trigger off}
                   } else {
                      set bExists TRUE
@@ -923,6 +952,7 @@ $cmd {
 					} elseif {$SUBNAME != ""} {
 						  
 					}
+					mql trigger on
 					#add by lsy 20191018 end
 			}
             
