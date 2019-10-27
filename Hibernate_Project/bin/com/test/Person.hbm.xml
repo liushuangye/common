@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+    
+<hibernate-mapping>
+	<!-- 建立类与表的映射 -->
+	<class name="com.test.Person" table="person">
+		<!-- 建立类中的属性与表中的主键相对应 -->
+		<id name="id" column="id">
+			<!-- 主键的生成策略，现在使用的是本地生成策略 -->
+			<generator class="native" />
+		</id>
+		
+		<!-- 建立类中的普通属性和表中的字段相对应 -->
+		<property name="name" column="name" />
+		
+		<!-- 对应班级配置中的cid -->
+        <many-to-one name="Company" class="com.test.Company" column="company_id" cascade="all"></many-to-one>
+	</class>
+</hibernate-mapping>
+    
