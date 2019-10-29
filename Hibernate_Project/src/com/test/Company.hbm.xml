@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC 
+    "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+    "http://www.hibernate.org/dtd/hibernate-mapping-3.0.dtd">
+    
+<hibernate-mapping>
+	<!-- 建立类与表的映射 -->
+	<class name="com.test.Company" table="company">
+		<!-- 建立类中的属性与表中的主键相对应 -->
+		<id name="id" column="id">
+			<!-- 主键的生成策略，现在使用的是本地生成策略 -->
+			<generator class="native" />
+		</id>
+		
+		<!-- 建立类中的普通属性和表中的字段相对应 -->
+		<property name="name" column="name" />
+		
+		<!-- inverse:这个属性（stus） 是否为关系的维护方，默认值为false
+          	  如果inverse设置为true，表示将由对方维护两者之间的关联关系
+         -->
+        <!--cascade（级联）意思是指定两个对象之间的操作联动关系，对一个对象执行了操作之后，对其指定的级联对象也需要执行相同的操作
+            all-代表在所有的情况下都执行级联操作
+            none-在所有情况下都不执行级联操作
+            save-update-在保存和更新的时候执行级联操作
+            delete-在删除的时候执行级联操作
+         -->
+         <!--lazy:延迟加载，默认true,如学生实体不调用班级实体信息，可以不用加载  -->
+        <set name="persons" inverse="false" cascade="all" lazy="true">
+            <!-- 关系维护方的外键列 -->
+            <key column="company_id"></key>
+            <one-to-many class="com.test.Person" />
+        </set>
+	</class>
+</hibernate-mapping>

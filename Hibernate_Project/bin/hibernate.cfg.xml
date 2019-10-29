@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+	"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+	"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+	
+<hibernate-configuration>
+	<session-factory>
+		<!-- 下面是三个必须要有的配置 -->
+		<!-- 配置连接MySQL数据库的基本参数 -->
+		<property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+		<property name="hibernate.connection.url"> jdbc:mysql://localhost:3306/project_core?useUnicode=true&amp;characterEncoding=utf-8</property>
+		<property name="hibernate.connection.username">root</property>
+		<property name="hibernate.connection.password">123456</property>
+		
+		<!-- 配置Hibernate的方言 -->
+		<property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+		
+		<!-- 下面两个是可选的配置哟！ -->
+		<!-- 打印sql语句 -->
+		<property name="hibernate.show_sql">true</property>
+		<!-- 格式化sql语句 -->
+		<property name="hibernate.format_sql">true</property>
+		
+		<!-- 告诉Hibernate的核心配置文件加载哪个映射文件 -->
+		<!-- 外键表要在前面 -->
+		<mapping resource="com/test/Company.hbm.xml"/>
+		<mapping resource="com/test/Person.hbm.xml"/>
+		
+	</session-factory>
+</hibernate-configuration>
+	
